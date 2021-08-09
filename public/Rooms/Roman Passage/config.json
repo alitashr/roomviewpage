@@ -1,0 +1,52 @@
+{
+	"version": 2,
+	"name": "",
+	"dims": {
+		"width": 3840,
+		"height": 2160
+	},
+	"roomType": "roomview",
+	"hasTransparencyMask": true,
+	"shots": [
+		"Shot_1"
+	],
+	"scene1": {
+		"objects3d": [
+			"surface1"
+		],
+		"modelUrl": "Roman Passage Futureth.FBX",
+		"surface1": {
+			"position": [
+				4010.244873046875,
+				8.1798095703125,
+				3296.001953125
+			],
+			"rotation": [
+				-89.99999499104383,
+				1.9505594423057923e-12,
+				-179.99997768820077
+			],
+			"scale": [
+				7.931631,
+				9.947719,
+				7.785439
+			]
+		},
+		"Shot_1": {
+			"position": [
+				4072.82861328125,
+				700.638427734375,
+				381.595458984375
+			],
+			"target": [
+				4046.09033203125,
+				696.344970703125,
+				2566.05078125
+			],
+			"fov": 57
+		}
+	},
+	"scenes": [
+		"scene1"
+	]
+}

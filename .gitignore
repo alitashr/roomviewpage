@@ -10,6 +10,8 @@
 
 # production
 /build
+/dist
+/public/testassets
 
 # misc
 .DS_Store
@@ -21,3 +23,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+/public/temp
+yarn.lock
