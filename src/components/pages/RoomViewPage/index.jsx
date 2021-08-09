@@ -1,6 +1,6 @@
 import { Button } from "antd";
 import React, { useEffect, useState } from "react";
-import { defaultRoomdata, initialDesignProps } from "../../../constants/constants";
+import { assetsFolder, defaultRoomdata, initialDesignProps } from "../../../constants/constants";
 import { getDesignData, getRoomData } from "../../../MiddlewareFunc/getInfo";
 import { preload, readImageFromUrl, readJSON } from "../../../utils/fileUtils";
 import { AtSpinner, AtSpinnerOverlay } from "../../atoms/AtSpinner";
@@ -21,13 +21,11 @@ const RoomViewPage = (props) => {
 
   useEffect(() => {
     let roomPath = sessionStorage.getItem("initview") || "";
-    console.log("useEffect -> roomPath", roomPath);
     const roomDataJSON = getRoomData(defaultRoomdata, roomPath);
-    const baseUrl = roomDataJSON.Dir;
+    const baseUrl = assetsFolder+ roomDataJSON.Dir;
 
     readJSON(`${baseUrl}/config.json`).then((config) => {
       const roomData = { ...roomDataJSON, config, baseUrl };
-      //console.log("readJSON -> roomData", roomData);
       setRoomData(roomData);
     });
 

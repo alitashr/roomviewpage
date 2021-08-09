@@ -20,7 +20,6 @@
 
     <script>
       const getUrlToOpen = (room = "", design = "") => {
-        console.log("room, design", room, design.toLowerCase());
         const defaultUrl =
           "https://v3.explorug.com/explorug.html?page=beyonddreams&initdesign=Designs/2020 EPI1/Atlasia.ctf&initview=Seashore.crf3d";
         if (room === "" || design === "") return defaultUrl;
@@ -84,9 +83,6 @@
       const path = window.location.pathname.split("/");
       path.pop();
       //window.location.href = window.location.origin + path.join("/");
-
-      const amberCabin_Thornure =
-        "https://v3.explorug.com/explorug.html?page=beyonddreams2&initdesign=Designs/Artwork/Assorted Design/Thornure.ctf&initview=Amber Cabin.crf3d";
 
       window.urlToOpen = getUrlToOpen(initview, initdesign);
     </script>
