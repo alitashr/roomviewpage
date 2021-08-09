@@ -1,0 +1,32 @@
+{
+    "version": 2,
+    "vps": {},
+    "shots": ["Shot_1"],
+    "scenes": ["scene1"],
+    "canvases": [],
+    "name": "Beach",
+    "width": 3840,
+    "height": 2160,
+    "dims": { "width": 3840, "height": 2160 },
+    "scene1": {
+        "overwriteFbx": true,
+        "modelUrl": "untitled.fbx",
+        "objects": ["surface1"],
+        "adjustObjects": [],
+        "hideObjects": [],
+        "Shot_1": {
+            "position": [152.02217958346733, 104.7539802831673, 167.9140235341019],
+            "rotation": [8710.22928251255, 6180, 9800.764869564418],
+            "target": [79.5527262510357, 43.21842575073242, 71.58004920938279],
+            "fov": 38
+        },
+        "surface1": {
+            "position": [-60.43718338012695, -34.36865234375, -36.58207702636719],
+            "rotation": [90.0000000000005, 180, 270],
+            "scale": [0.10000000149011612, 0.10000000149011612, 0.10000000149011612],
+            "resizable": true,
+            "textureRotation": 0
+        },
+        "flagged": true
+    }
+}

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="https://explorug.com/v2/images/fav-icon/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Room View by exploRUG" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>Room View by exploRUG</title>
+
+    <script>
+      const getUrlToOpen = (room = "", design = "") => {
+        console.log("room, design", room, design.toLowerCase());
+        const defaultUrl =
+          "https://v3.explorug.com/explorug.html?page=beyonddreams&initdesign=Designs/2020 EPI1/Atlasia.ctf&initview=Seashore.crf3d";
+        if (room === "" || design === "") return defaultUrl;
+        const AMBER_CABIN = "rooms/amber cabin";
+        const ROMAN_PASSAGE = "rooms/roman passage";
+        const THORNURE = "designs/thornure.jpg";
+        const TAPPETO = "designs/tappeto classico.png";
+
+        let page = "beyonddreams2";
+        let initDesign = "Designs/2020 EPI1/Atlasia.ctf";
+        let initView = "Seashore.crf3d";
+
+        let windowUrl = defaultUrl;
+        if (room.toLowerCase() === AMBER_CABIN) {
+          page = "beyonddreams2";
+          initview = "Amber Cabin.crf3d";
+        } else if (room.toLowerCase() === ROMAN_PASSAGE) {
+          page = "beyonddreams2";
+          initview = "Roman Passage.crf3d";
+        } 
+        
+        if (design.toLowerCase() === THORNURE) {
+          page = "beyonddreams2";
+          initDesign = "Designs/Artwork/Assorted Design/Thornure.ctf";
+        }
+        else if(design.toLowerCase()===TAPPETO){
+          page = "beyonddreams2";
+          initDesign = "Designs/Artwork/Assorted Design/Tappeto Classico.ctf";
+        }
+        
+        windowUrl = `https://v3.explorug.com/explorug.html?page=${page}&initdesign=${initDesign}&initview=${initview}`;
+        console.log("getUrlToOpen -> windowUrl", windowUrl)
+        return windowUrl;
+      };
+
+      function getJsonFromUrl(url) {
+        if (!url) url = window.location.search;
+        var query = url.substr(1);
+        var result = {};
+        query.split("&").forEach(function (part) {
+          var item = part.split("=");
+          result[item[0]] = decodeURIComponent(item[1]);
+        });
+        return result;
+      }
+      // sessionStorage.clear();
+      var jsonUrl = getJsonFromUrl();
+      var page = jsonUrl.page;
+      var initview = jsonUrl.initview;
+      var initdesign = jsonUrl.initdesign;
+      var roomName = jsonUrl.roomName;
+      var designName = jsonUrl.designName;
+      if (page) sessionStorage.setItem("page", page);
+      if (initview) sessionStorage.setItem("initview", initview);
+      if (initdesign) sessionStorage.setItem("initdesign", initdesign);
+      if (roomName) sessionStorage.setItem("roomName", roomName);
+      if (designName) sessionStorage.setItem("designName", designName);
+
+      console.log("initview", initview, "; initdesign", initdesign);
+
+      const path = window.location.pathname.split("/");
+      path.pop();
+      //window.location.href = window.location.origin + path.join("/");
+
+      const amberCabin_Thornure =
+        "https://v3.explorug.com/explorug.html?page=beyonddreams2&initdesign=Designs/Artwork/Assorted Design/Thornure.ctf&initview=Amber Cabin.crf3d";
+
+      window.urlToOpen = getUrlToOpen(initview, initdesign);
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
