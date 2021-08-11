@@ -1,4 +1,6 @@
 import { getJsonFromUrl } from "../utils/domUtils";
+import { MD5 } from "../utils/md5";
+import { createUriSafe } from "../utils/stringUtils";
 import HttpClient from "./httpClient";
 
 export const build = "v3";
@@ -15,6 +17,14 @@ export const assetsDomain =
     ? "https://assets.explorug.com" //"https://d1tvaiszosdaib.cloudfront.net"
     : `${domain}/Assets`;
 
+let apikey;
+let cacheLocation = "";
+const getCacheLocationFromUrl = url => url.split("/")[2];
+
+const getApiKey = () => {
+  if (!apikey) apikey = sessionStorage.getItem(API_KEY);
+  return apikey;
+};
 const getPageName = () => {
   let page;
   let relogin = true;
@@ -29,20 +39,20 @@ const getPageName = () => {
 const postHttpClient = (data, config, sendErrorReport = true) => {
   return new Promise((resolve, reject) => {
     HttpClient.post(`${domain}/${provider}`, data, config)
-      .then(response => resolve(response.data))
-      .catch(error => {
+      .then((response) => resolve(response.data))
+      .catch((error) => {
         //if (sendErrorReport) postErrorReport(error, data);
         reject(error);
       });
   });
 };
-const postWithRetry = data => {
+const postWithRetry = (data) => {
   return new Promise((resolve, reject) => {
     let numtries = 0;
     const fetchData = () => {
       postHttpClient(data, {}, false)
         .then(resolve)
-        .catch(error => {
+        .catch((error) => {
           numtries++;
           if (numtries <= 5) fetchData();
           else {
@@ -54,8 +64,15 @@ const postWithRetry = data => {
     fetchData();
   });
 };
-
-
+const processPath = (path, thumbFromCDN = true) => {
+  const s = path.split("/").map(encodeURIComponent);
+  if (s[1] === "Assets" && thumbFromCDN) {
+    const ss = s.slice(2);
+    return `${assetsDomain}/${ss.join("/")}`;
+  } else {
+    return `${domain}${createUriSafe(path)}`;
+  }
+};
 const fetchApiKey = ({ username, password, encrypted = false }) => {
   let data = new FormData();
   data.append("action", "login");
@@ -66,7 +83,7 @@ const fetchApiKey = ({ username, password, encrypted = false }) => {
   }
   return new Promise((resolve, reject) => {
     postWithRetry(data)
-      .then(res => {
+      .then((res) => {
         const key = res.Key;
         if (!key) reject("INVALUD CREDENTIALS");
         else {
@@ -83,14 +100,14 @@ const fetchApiKey = ({ username, password, encrypted = false }) => {
 
 export const autoLogin = () => {
   const { page, relogin } = getPageName();
-  console.log("autoLogin -> page", page)
+  console.log("autoLogin -> page", page);
   const username = sessionStorage.getItem("username") || "";
   const password = sessionStorage.getItem("password") || "";
 
-  return new Promise((resolve, reject)=>{
+  return new Promise((resolve, reject) => {
     if (page && page !== "undefined") {
       HttpClient.post(`${domain}/login/app${page}.aspx`)
-        .then(response => {
+        .then((response) => {
           if (!response.data) {
             reject("INVALID_CREDENTIALS");
             return;
@@ -104,7 +121,7 @@ export const autoLogin = () => {
         .catch(reject);
     } else if (username && username !== "" && password && password !== "") {
       fetchApiKey(username, password, true)
-        .then(key => {
+        .then((key) => {
           return;
         })
         .catch(reject("NO_LOGIN_PAGE"));
@@ -114,5 +131,64 @@ export const autoLogin = () => {
       else reject("NO_LOGIN_PAGE");
       return;
     }
-  })
+  });
+};
+
+export const fetchDesignList = (params = {}) => {
+  const { struct } = params;
+  let data = new FormData();
+  data.append("action", "designlist");
+  data.append("key", getApiKey());
+  if (struct) {
+    data.append("mode", "struct");
+  }
+  return new Promise((resolve, reject) => {
+    let numtries = 0;
+    post();
+    function post() {
+      postHttpClient(data)
+        .then(resolve)
+        .catch((err) => {
+          if (err.code === "ECONNABORTED" && numtries < 5) {
+            numtries++;
+            post();
+          } else {
+            reject(err);
+          }
+        });
+    }
+  });
+};
+
+
+export const fetchDesignThumbnails = ({ designs, customThumbPath =false, thumbFromCDN = false, showThumbTexture = false }) => {
+console.log("fetchDesignThumbnails -> designs", designs)
+  //const { customThumbPath } = window.flags.designListTree;
+  // const { thumbFromCDN = true, showThumbTexture = false } = window.flags;
+  const fullpaths = designs.map(item => item.fullPath);
+
+  let data = new FormData();
+  data.append("action", "designthumbs");
+  data.append("key", getApiKey());
+  data.append("files", JSON.stringify(fullpaths));
+  if (showThumbTexture) data.append("texture", 1);
+  return postWithRetry(data).then(thumbList => {
+    return designs.map(childFile => {
+      const item = thumbList.find(item => item.Name === childFile.fullPath);
+      let add = {};
+      if (item) {
+        const hash = MD5(JSON.stringify(item.Props));
+        const path = processPath(item.Thumb, thumbFromCDN);
+        let thumbUrl = `${path}?t=${hash}`;
+        if (customThumbPath) {
+          const spl = item.Name.split("/").slice(1);
+          const p = spl.join("/");
+          thumbUrl = `${customThumbPath}/${p}`;
+        }
+        add = { thumbUrl, designProps: item.Props };
+        cacheLocation = getCacheLocationFromUrl(item.Thumb);
+      }
+      return { ...childFile, ...add };
+    });
+  });
 };
