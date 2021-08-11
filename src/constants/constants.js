@@ -1,8 +1,8 @@
 console.log("process.env.SERVER", process.env.SERVER)
 export const assetsFolder = './';//process.env.SERVER !=='local'? 'https://cdn.explorug.com/explorugentry/roomview/':  './'; //'./'
 export const defaultRoomdata = {
-  Dir: assetsFolder + "Rooms/beach",
-  Name: "Seashore",
+  Dir: assetsFolder + "Rooms/Cozy Dining",
+  Name: "Cozy Dining",
   Files: [
     "Shot_1.bg.jpg",
     "Shot_1.sh.jpg",
@@ -10,6 +10,6 @@ export const defaultRoomdata = {
   ]
 };
 export const initialDesignProps = {
-  designName: "Atlas",
-  designImagePath: assetsFolder+"Designs/Atlas.jpg"
+  designName: "Thornure",
+  designImagePath: assetsFolder+"Designs/Thornure.jpg"
 }

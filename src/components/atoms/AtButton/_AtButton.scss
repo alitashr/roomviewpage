@@ -1,0 +1,15 @@
+.ant-btn-primary {
+  border: none;
+  font-weight: 600;
+  border-radius: 0.25rem;
+  background:  var(--brand3);
+  color: #8c9399;
+  color: var(--text-primary);
+  &:hover, &:focus{
+    background: var(--text-primary);
+    color: #8c9399;
+    color: var(--brand3);  
+  }
+}
+
+

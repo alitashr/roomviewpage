@@ -19,26 +19,32 @@
     <title>Room View by exploRUG</title>
 
     <script>
-      const getUrlToOpen = (room = "", design = "") => {
-        const defaultUrl =
-          "https://v3.explorug.com/explorug.html?page=beyonddreams&initdesign=Designs/2020 EPI1/Atlasia.ctf&initview=Seashore.crf3d";
-        if (room === "" || design === "") return defaultUrl;
+      window.getExplorugUrl = ({page='', initDesign ='', initView=''})=>{
+        const windowUrl = `https://v3.explorug.com/explorug.html?page=${page}&initdesign=${initDesign}&initview=${initView}`;
+        console.log("getUrlToOpen -> windowUrl", windowUrl)
+        return windowUrl;
+      }
+      const getUrlToOpen = () => {
+      
         const AMBER_CABIN = "rooms/amber cabin";
         const ROMAN_PASSAGE = "rooms/roman passage";
         const THORNURE = "designs/thornure.jpg";
         const TAPPETO = "designs/tappeto classico.png";
 
         let page = "beyonddreams2";
-        let initDesign = "Designs/2020 EPI1/Atlasia.ctf";
-        let initView = "Seashore.crf3d";
+        let design = sessionStorage.getItem('initdesign') || "";
+        let room =  sessionStorage.getItem('initview') ||"";
 
-        let windowUrl = defaultUrl;
+        let initDesign = "Designs/Artwork/Assorted Design/Thornure.ctf";
+        let initView= 'Cozy Dining.crf3d';
+        let windowUrl =  ''; //getExplorugUrl({page,initDesign, initView});;
+
         if (room.toLowerCase() === AMBER_CABIN) {
           page = "beyonddreams2";
-          initview = "Amber Cabin.crf3d";
+          initView = "Amber Cabin.crf3d";
         } else if (room.toLowerCase() === ROMAN_PASSAGE) {
           page = "beyonddreams2";
-          initview = "Roman Passage.crf3d";
+          initView = "Roman Passage.crf3d";
         } 
         
         if (design.toLowerCase() === THORNURE) {
@@ -50,16 +56,18 @@
           initDesign = "Designs/Artwork/Assorted Design/Tappeto Classico.ctf";
         }
         
-        windowUrl = `https://v3.explorug.com/explorug.html?page=${page}&initdesign=${initDesign}&initview=${initview}`;
-        console.log("getUrlToOpen -> windowUrl", windowUrl)
+        windowUrl = getExplorugUrl({page,initDesign, initView});
         return windowUrl;
       };
+     
 
-      function getJsonFromUrl(url) {
+      window.getJsonFromUrl = function(url) {
         if (!url) url = window.location.search;
         var query = url.substr(1);
         var result = {};
         query.split("&").forEach(function (part) {
+          console.log("part", part)
+          //part = part.split('?')[1];
           var item = part.split("=");
           result[item[0]] = decodeURIComponent(item[1]);
         });
@@ -84,7 +92,7 @@
       path.pop();
       //window.location.href = window.location.origin + path.join("/");
 
-      window.urlToOpen = getUrlToOpen(initview, initdesign);
+      window.urlToOpen = getUrlToOpen();
     </script>
   </head>
   <body>

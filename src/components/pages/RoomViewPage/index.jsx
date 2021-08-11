@@ -1,20 +1,14 @@
 import { Button } from "antd";
+import classNames from "classnames";
 import React, { useEffect, useState } from "react";
 import { assetsFolder, defaultRoomdata, initialDesignProps } from "../../../constants/constants";
 import { getDesignData, getRoomData } from "../../../MiddlewareFunc/getInfo";
-import { preload, readImageFromUrl, readJSON } from "../../../utils/fileUtils";
-import { AtSpinner, AtSpinnerOverlay } from "../../atoms/AtSpinner";
+import { openFile, preload, readImageFromUrl, readJSON } from "../../../utils/fileUtils";
+import { AtSpinnerOverlay } from "../../atoms/AtSpinner";
 import RoomView from "../../organisms/RoomView";
 
-var openFile = function (file, callback) {
-  var reader = new FileReader();
-  reader.onload = function () {
-    callback(reader.result);
-  };
-  reader.readAsDataURL(file);
-};
-
 const RoomViewPage = (props) => {
+  const { showButton  = true, className='', onButtonClick} = props;
   const [roomData, setRoomData] = useState();
   const [designImageProps, setDesignImageProps] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,7 +16,7 @@ const RoomViewPage = (props) => {
   useEffect(() => {
     let roomPath = sessionStorage.getItem("initview") || "";
     const roomDataJSON = getRoomData(defaultRoomdata, roomPath);
-    const baseUrl = assetsFolder+ roomDataJSON.Dir;
+    const baseUrl = assetsFolder + roomDataJSON.Dir;
 
     readJSON(`${baseUrl}/config.json`).then((config) => {
       const roomData = { ...roomDataJSON, config, baseUrl };
@@ -46,15 +40,19 @@ const RoomViewPage = (props) => {
     }
   }, [roomData]);
 
-  const handleBtnClick=()=>{
-    const key = sessionStorage.getItem('key') ||'';
-    let url =  window.urlToOpen;
-    url = key!=='' ? window.urlToOpen+'&key='+key: url;
-    console.log("onbtnClick -> url", url)
-    window.location = url;
-  }
+  const handleBtnClick = () => {
+    const key = sessionStorage.getItem("key") || "";
+    let url = window.urlToOpen;
+    url = key !== "" ? window.urlToOpen + "&key=" + key : url;
+    console.log("onbtnClick -> url", url);
+    if(onButtonClick){
+      onButtonClick();
+    }
+    else
+      window.location = url;
+  };
   return (
-    <>
+    <div className={classNames("at-roomview-container", className)}>
       {roomData && designImageProps && (
         <RoomView
           onRendered={() => {
@@ -62,23 +60,23 @@ const RoomViewPage = (props) => {
             console.log("room has been rendered");
           }}
           onRoomLoaded={() => {
-           // console.log("room has been loaded");
+            // console.log("room has been loaded");
           }}
           roomData={roomData}
           designImageProps={designImageProps}
         />
       )}
-        {isLoading && (
+      {isLoading && (
         <div className="spinner-container">
           <AtSpinnerOverlay show={isLoading}></AtSpinnerOverlay>
         </div>
       )}
-      <Button type="primary" loading={false} className='at-entrypoint-roomview-btn'
-      onClick={handleBtnClick}>
+      {showButton && (
+        <Button type="primary" loading={false} className="at-entrypoint-roomview-btn" onClick={handleBtnClick}>
           Open in exploRUG
         </Button>
-
-    </>
+      )}
+    </div>
   );
 };
 
