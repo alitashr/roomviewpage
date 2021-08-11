@@ -13,12 +13,9 @@ export const getRoomData = (defaultRoomdata, roomPath = "") => {
   let roomData = defaultRoomdata;
   if (roomPath !== "") {
     let roomName = sessionStorage.getItem("roomName") || "";
-    if (roomName === "") {
       const fileName = roomPath.split("/").pop();
-      roomName = fileName.substr(0, fileName.lastIndexOf("."));
       roomData.Dir = roomPath;
-      roomData.Name = roomName;
-    }
+      roomData.Name =  roomName === "" ? fileName.substr(0, fileName.lastIndexOf(".")) : roomName;
   }
   return roomData;
 };

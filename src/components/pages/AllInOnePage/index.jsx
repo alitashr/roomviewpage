@@ -3,6 +3,7 @@ import AtButton from "../../atoms/AtButton";
 import RoomViewPage from "../RoomViewPage";
 
 const AllInOnePage = (props) => {
+  
   const onCustomizeRug = () => {
     window.open(window.urlToOpen, "_blank");
   };
