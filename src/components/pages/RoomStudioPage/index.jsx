@@ -7,6 +7,7 @@ import RoomContainer from '../../organisms/RoomContatiner';
 
 import { getDesignList } from '../../../redux';
 import DesignlistContainer from '../../organisms/DesignlistContainer';
+import ColorlistContainer from '../../organisms/ColorListContainer';
 
 const RoomStudioPage = props => {
   const designlist = useSelector(state=> state.designlist);
@@ -36,11 +37,15 @@ const RoomStudioPage = props => {
   return (
     <div>
       <RoomContainer></RoomContainer>
+      <div className="at-mainbuttons-container">
       <AtButton text="See in your own room" className="at-room-studio-page at-btn-myroom" onClick={onMyroomClick}></AtButton>
       <AtButton text="Customize Rug" className="at-room-studio-page -btn-myroom" onClick={onCustomizeRug}></AtButton>
 
       <DesignlistContainer></DesignlistContainer>
-    </div>
+      <ColorlistContainer></ColorlistContainer>
+    
+      </div>
+      </div>
   );
 };
 

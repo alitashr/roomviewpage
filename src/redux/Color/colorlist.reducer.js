@@ -1,4 +1,4 @@
-import { colorlistActions } from "./colorlist.actions";
+import { colorlistActions } from "./colorlistActions";
 
 const defColIndex = 0;
 
@@ -16,15 +16,15 @@ const colorlistReducer = (state = initialState, action) => {
     case colorlistActions.SET_COLORS:
       return {
         ...state,
-        collections: action.payload,
-        filteredCollection: action.payload[defColIndex],
+        collections: payload,
+        filteredCollection: payload[defColIndex],
         loading: false,
       };
     case colorlistActions.SELECT_COLLECTION:
       return {
         ...state,
-        collectionIndex: action.payload,
-        filteredCollection: state.collections[action.payload],
+        collectionIndex: payload,
+        filteredCollection: state.collections[payload],
       };
 
     default:

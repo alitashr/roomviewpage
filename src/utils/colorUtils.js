@@ -1,0 +1,15 @@
+
+export function compare(a, sortingKey, b, sortingOrder) {
+  const item1 = a[sortingKey];
+  const item2 = b[sortingKey];
+  return item1 === item2 ? 0 : item1 < item2 ? -sortingOrder : sortingOrder;
+}
+
+export const previewMaterial = ({texture, selectedColor, yarnIndex, DesignColors}) => {
+  const tex = parseInt(texture || "-1");
+  if (tex !== -1) return tex;
+  if (selectedColor && selectedColor === -1) return -1;
+  let yi = yarnIndex || 0;
+  yi = yi === -1 ? 0 : yi;
+  if (yarnIndex === -1) return DesignColors[selectedColor].YarnDetails[yi].Material;
+};

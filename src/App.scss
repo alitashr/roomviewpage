@@ -7,10 +7,12 @@
 @import "./components/atoms/AtButton/AtButton";
 @import "./components/atoms/AtSpinner/spinner";
 @import "./components/molecules/Thumbnail/Thumbnail";
+@import "./components/molecules/SwatchContainer/SwatchContainer";
 
+
+@import "./components/organisms/ColorListContainer/ColorListContainer";
 @import "./components/organisms/DesignlistContainer/DesignlistContainer";
-
-
 @import "./components/organisms/RoomView/RoomView";
+
 @import "./components/pages/RoomViewPage/RoomViewPage";
 @import "./components/pages/RoomStudioPage/RoomStudioPage";
