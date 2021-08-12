@@ -1,0 +1,13 @@
+.at-icon-close{
+  position: absolute;
+    right: 1rem;
+}
+
+.thumb-container {
+  padding: .5rem;
+  display: inline-grid;
+  grid-template-columns: 50% 50%;
+  width: 100%;
+  max-height: 50vh;
+    overflow: auto;
+}

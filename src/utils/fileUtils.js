@@ -63,7 +63,7 @@ export const preload = ({ baseUrl, config, files }) => {
   if (files.includes(bgUrl))
     readImage(makeUrl(baseUrl, bgUrl)).then((image) => {
       //setbgImg(image.src);
-      console.log(image.src);
+      
     });
   if (files.includes(bgPatchUrl)) readImage(makeUrl(baseUrl, bgPatchUrl)).then(() => {});
   if (files.includes(bgPatchShadowUrl)) readImage(makeUrl(baseUrl, bgPatchShadowUrl)).then(() => {});

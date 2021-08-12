@@ -16,7 +16,6 @@ const RoomContainer = props => {
   useEffect(()=>{
     dispatch(setDesignDetails()) 
     dispatch(fetchBasicDetails()) 
-    
   },[]);
 
   useEffect(() => {
@@ -25,6 +24,11 @@ const RoomContainer = props => {
       preload({ baseUrl, config, files });
     }
   }, [roomData]);
+
+  useEffect(()=>{
+
+  }, [designData])
+
   
   return (
     <div className={classNames("at-roomview-container", className)}>

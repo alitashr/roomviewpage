@@ -10,20 +10,17 @@ import DesignlistContainer from '../../organisms/DesignlistContainer';
 
 const RoomStudioPage = props => {
   const designlist = useSelector(state=> state.designlist);
-  console.log("design", designlist)
-
   const dispatch = useDispatch();
   useMount(()=>{
     autoLogin()
     .then(key => {
-    console.log("useMount -> key", key);
     if(key.Key && key.Key!==''){
       dispatch(getDesignList())
     }
     })
   });
   useEffect (()=>{
-    console.log(designlist)
+    console.log('roomstudiopage=> ',designlist)
   }, [designlist])
 
   const onCustomizeRug = () => {
@@ -39,8 +36,8 @@ const RoomStudioPage = props => {
   return (
     <div>
       <RoomContainer></RoomContainer>
-      <AtButton text="See in your own room" className="at-btn-myroom" onClick={onMyroomClick}></AtButton>
-      <AtButton text="Customize Rug" className="at-btn-myroom" onClick={onCustomizeRug}></AtButton>
+      <AtButton text="See in your own room" className="at-room-studio-page at-btn-myroom" onClick={onMyroomClick}></AtButton>
+      <AtButton text="Customize Rug" className="at-room-studio-page -btn-myroom" onClick={onCustomizeRug}></AtButton>
 
       <DesignlistContainer></DesignlistContainer>
     </div>

@@ -162,7 +162,6 @@ export const fetchDesignList = (params = {}) => {
 
 
 export const fetchDesignThumbnails = ({ designs, customThumbPath =false, thumbFromCDN = false, showThumbTexture = false }) => {
-console.log("fetchDesignThumbnails -> designs", designs)
   //const { customThumbPath } = window.flags.designListTree;
   // const { thumbFromCDN = true, showThumbTexture = false } = window.flags;
   const fullpaths = designs.map(item => item.fullPath);
@@ -191,4 +190,11 @@ console.log("fetchDesignThumbnails -> designs", designs)
       return { ...childFile, ...add };
     });
   });
+};
+
+export const fetchColorList = params => {
+  let data = new FormData();
+  data.append("action", "colorlist");
+  data.append("key", getApiKey());
+  return postHttpClient(data);
 };

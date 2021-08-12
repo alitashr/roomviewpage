@@ -13,8 +13,6 @@ const LazyThumbnail = props => {
   useEffect(()=>{
     if(!inView) return;
     const loadDesignThumbnail = async () => {
-      console.log("loadDesignThumbnail -> node.thumbUrl", node.thumbUrl)
- 
       if (node.thumbUrl) return;
       //noe get thumbs
     }
@@ -22,13 +20,12 @@ const LazyThumbnail = props => {
   },[inView, node])
 
   const handleThumbClick = (node, e) => {
-    console.log("thumb clicked")
     if (onThumbnailClick) {
       onThumbnailClick(node, e);
     }
   };
   return (
-    <div ref={ref}>
+    <div ref={ref} className="thumb-item-container">
       {renderThumbnails({
         template: 1,
         node,

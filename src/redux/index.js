@@ -1,3 +1,4 @@
 export * from "./Design/designActions";
 export * from "./Room/roomActions";
-export * from "./Designlist/designlist.actions";
+export * from "./Designlist/designlistActions";
+export * from "./Color/colorlist.actions";

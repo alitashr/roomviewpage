@@ -28,7 +28,6 @@ const RoomView = (props) => {
   useEffect(()=>{
  //window.downloadRendered3dIllNQ = downloadRendered3dIllNQ({ designName, roomName, roomViewHelper });
  window.downloadRendered3dIllNQ = async () => {
-  console.log("window.downloadRendered3dIllNQ= -> downloadRendered3dIllNQ")
   const mime = "jpeg";
   const downloadName = `${designName} in ${roomName}.${mime}`;
   roomViewHelper.downloadRendering(downloadName, mime);
@@ -121,7 +120,6 @@ const RoomView = (props) => {
         }
         if (prevDesignImagePath !== designImagePath) {
           await roomViewHelper.updatethreeCanvas();
-          console.log("designImagePath type", typeof designImagePath);
           if (typeof designImagePath === "string") {
             await roomViewHelper.renderDesignFromCustomUrl({
               customUrl: designImagePath,

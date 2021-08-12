@@ -1,10 +1,16 @@
 @import 'antd/dist/antd.css';
 @import './colors';
 @import './color-aliases';
+@import './scrollbars.scss';
 
 @import "./components/atoms/AtIcon/aticon";
 @import "./components/atoms/AtButton/AtButton";
 @import "./components/atoms/AtSpinner/spinner";
+@import "./components/molecules/Thumbnail/Thumbnail";
+
+@import "./components/organisms/DesignlistContainer/DesignlistContainer";
+
 
 @import "./components/organisms/RoomView/RoomView";
-@import "./components/pages/RoomViewPage/RoomViewPage"
+@import "./components/pages/RoomViewPage/RoomViewPage";
+@import "./components/pages/RoomStudioPage/RoomStudioPage";

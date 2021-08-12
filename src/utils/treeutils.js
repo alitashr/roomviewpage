@@ -3,7 +3,6 @@ import { getPathOffile } from "./stringUtils";
 
 export const getAllFiles = array => {
   const arr = [...array];
-  console.log("arr", arr)
   const files = [];
   arr.forEach(function iter(a) {
     files.push(...a.files);
@@ -268,3 +267,18 @@ export function arrangeTree({
     return { copiedNode: [copiedNode], selectedFile, selectedFolder };
   }
 }
+
+export const findFolderofFile = (array, findFile) => {
+  const arr = [...array];
+  let folder;
+  arr.forEach(function iter(a) {
+    const fil = a.files.findIndex(file => { return file.fullPath === findFile.fullPath});
+    if (fil && fil !== -1) {
+      //folder = a[fil];
+      folder = a;
+      return;
+    }
+    Array.isArray(a.children) && a.children.forEach(iter);
+  });
+  return folder;
+};

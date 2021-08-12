@@ -1,41 +1,67 @@
-import React, { PropTypes, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { getDesignThumbnails } from '../../../redux';
-import { getAllFiles } from '../../../utils/treeutils';
-import DesignThumblist from '../DesignThumblist';
+import { Popover } from "antd";
+import React, { PropTypes, useEffect } from "react";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getDesignThumbnails } from "../../../redux";
+import {CloseOutlined } from '@ant-design/icons';
+import { getAllFiles } from "../../../utils/treeutils";
+import AtButton from "../../atoms/AtButton";
+import DesignThumblist from "../DesignThumblist";
 
-const DesignlistContainer = props => {
-  
-  const selectedFolder = useSelector(state=> state.designlist.selectedFolder);
-  
-  const selectedFile = useSelector(state=> state.designlist.selectedFile);
-  const tree = useSelector(state=> state.designlist.tree);
+const DesignlistContainer = (props) => {
+  const selectedFolder = useSelector((state) => state.designlist.selectedFolder);
+
+  const selectedFile = useSelector((state) => state.designlist.selectedFile);
+  const tree = useSelector((state) => state.designlist.tree);
   const dispatch = useDispatch();
-  useEffect(()=>{
-    if(!selectedFolder) return;
+  const [showPopover, setShowPopover] = useState(false);
+
+  useEffect(() => {
+    if (!selectedFolder) return;
     const files = selectedFolder.files;
-  dispatch(getDesignThumbnails({designs: files, tree}))
+    dispatch(getDesignThumbnails({ designs: files, tree }));
+  }, [selectedFolder]);
+  
+  const onThumbnailClick = (node, file, activeVariation) => {
     
-  }, [selectedFolder])
-  const onThumbnailClick=()=>{
-    console.log('onThumbnailClick--')
-  }
+    if (!file.designProps) return;
+
+    //console.log("onThumbnailClick--");
+  };
+  const handleVisibleChange = visible => {  
+    setShowPopover(visible);
+  };
+  const onSelectRug = () => {
+    setShowPopover(true);
+  };
   return (
-    <div>
-      this is designlist
+    <>
+    {selectedFolder && selectedFolder.files && (
+      <Popover
+        content={<div className="at-designlist-container"> 
+        <div className="ant-popover-title">Select Rug <CloseOutlined className="at-icon-close" onClick={()=>handleVisibleChange(false)} /></div>
+        <DesignThumblist
+        className='at-popover-design-list'
+          files={selectedFolder.files}
+          selectedFile={selectedFile}
+          onThumbnailClick={onThumbnailClick}
+        ></DesignThumblist>
+        </div>}
+        title={null}
+        trigger="click"
+        visible={showPopover}
+        onVisibleChange={(visible)=>handleVisibleChange(visible)}
+      >
+       <AtButton text="Select Rug" type="primary" className="at-room-studio-page at-btn-selectrug" onClick={onSelectRug}></AtButton>
 
-      {selectedFolder && selectedFolder.files && (
-      <DesignThumblist files={selectedFolder.files}
-      selectedFile={selectedFile}
-      onThumbnailClick={onThumbnailClick}>
+      </Popover>
 
-      </DesignThumblist>)}
-    </div>
+     
+      )}
+    </>
   );
 };
 
-DesignlistContainer.propTypes = {
-  
-};
+DesignlistContainer.propTypes = {};
 
 export default DesignlistContainer;

@@ -44,7 +44,6 @@ const RoomViewPage = (props) => {
     const key = sessionStorage.getItem("key") || "";
     let url = window.urlToOpen;
     url = key !== "" ? window.urlToOpen + "&key=" + key : url;
-    console.log("onbtnClick -> url", url);
     if(onButtonClick){
       onButtonClick();
     }

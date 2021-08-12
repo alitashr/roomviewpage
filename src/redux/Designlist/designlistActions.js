@@ -2,8 +2,11 @@ import { fetchDesignList, fetchDesignThumbnails } from "../../api/appProvider";
 import { arrangeTree, findInTree, updateFilesInEveryNode } from "../../utils/treeutils";
 
 const SET_TREE = "SET_TREE";
+const SELECT_DESIGN = "SELECT_DESIGN";
+
 export const designlistActions = {
   SET_TREE,
+  SELECT_DESIGN,
 };
 
 const setDesignList = (payload) => {
@@ -12,8 +15,14 @@ const setDesignList = (payload) => {
     payload: payload,
   };
 };
+const selectDesign = (payload) => {
+  return {
+    type: designlistActions.SELECT_DESIGN,
+    payload: payload,
+  };
+};
 
-export const getDesignList = () => {
+export const getDesignList = (initDesignPath='Designs/Artwork/Assorted Design/Thornure.ctf') => {
   return (dispatch) => {
     fetchDesignList({ struct: true }).then((nestedDesignList) => {
       const {
@@ -22,11 +31,12 @@ export const getDesignList = () => {
         selectedFolder,
       } = arrangeTree({
         tree: nestedDesignList,
+        initDesignPath:initDesignPath!==''? initDesignPath : null,
         setActiveItem: true,
         expandSelectedFolder: true,
         keepFoldersExpanded: false,
       });
-      console.log("fetchDesignList -> selectedFile, selectedFolder", selectedFile, selectedFolder);
+       console.log("fetchDesignList -> selectedFile, selectedFolder", selectedFile, selectedFolder);
       dispatch(
         setDesignList({
           tree: tree,
@@ -48,5 +58,16 @@ export const getDesignThumbnails = ({ designs, tree }) => {
         })
       );
     });
+  };
+};
+
+export const onDesignThumnailClick = (node, file, activeVariation) => {
+  return (dispatch) => {
+    dispatch(
+      selectDesign({
+        selectedFile: file,
+        activeVariation: activeVariation,
+      })
+    );
   };
 };
