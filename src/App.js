@@ -8,7 +8,7 @@ import { Provider } from 'react-redux';
 import store from './redux/store';
 
 const PageToRender = props=>{
-  const template = sessionStorage.getItem("template") ||'redux-test';
+  const template = sessionStorage.getItem("template") ||'roomview';
   switch (template){
     case "redux-test":
       return <RoomStudioPage></RoomStudioPage>

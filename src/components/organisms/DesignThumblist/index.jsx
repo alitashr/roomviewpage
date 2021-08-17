@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { PropTypes } from 'react';
+import React from 'react';
 import LazyThumbnail from '../../molecules/LazyThumbnail';
 
 const DesignThumblist = props => {

@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import React, { PropTypes, useEffect, useRef, useState } from "react";
 import { useMount, useWindowSize } from "react-use";
 import { usePrevious } from "../../../hooks";
@@ -9,7 +10,7 @@ import RoomViewHelper from "./roomviewhelper";
 
 let roomViewHelper = new RoomViewHelper();
 const RoomView = (props) => {
-  const { roomData, designImageProps, onRendered, onRoomLoaded } = props;
+  const { roomData, designImageProps, onRendered, onRoomLoaded, className='' } = props;
   const { Name: roomName, Dir: dir, Files, baseUrl, config } = roomData;
   const { designImagePath, designName } = designImageProps;
 
@@ -157,7 +158,7 @@ const RoomView = (props) => {
   
   return (
     <React.Fragment>
-      <div className="canvas-container" ref={containerRef}>
+      <div className={classNames("canvas-container", className)} ref={containerRef}>
         <canvas className="canvas" ref={bgCanvasRef} style={{ zIndex: 1, pointerEvents: "none" }} />
         <canvas className="canvas" ref={threeCanvasRef} style={{ zIndex: 2, pointerEvents: "all" }} />
         <canvas className="canvas" ref={maskCanvasRef} style={{ zIndex: 3, pointerEvents: "none" }} />

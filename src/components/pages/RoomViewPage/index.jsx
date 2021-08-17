@@ -5,14 +5,17 @@ import { assetsFolder, defaultRoomdata, initialDesignProps } from "../../../cons
 import { getDesignData, getRoomData } from "../../../MiddlewareFunc/getInfo";
 import { openFile, preload, readImageFromUrl, readJSON } from "../../../utils/fileUtils";
 import { AtSpinnerOverlay } from "../../atoms/AtSpinner";
+import VideoPlayer from "../../molecules/VideoPlayer";
+import ExplorugIframePopup from "../../organisms/ExplorugIframePopup";
 import RoomView from "../../organisms/RoomView";
 
 const RoomViewPage = (props) => {
-  const { showButton  = true, className='', onButtonClick} = props;
+  const { showButton = true, className = "", onButtonClick } = props;
   const [roomData, setRoomData] = useState();
   const [designImageProps, setDesignImageProps] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [showIframe, setShowIframe] = useState(false);
+  let hasOverlayVideo = sessionStorage.getItem("hasOverlayVideo") || false;
   useEffect(() => {
     let roomPath = sessionStorage.getItem("initview") || "";
     const roomDataJSON = getRoomData(defaultRoomdata, roomPath);
@@ -32,7 +35,21 @@ const RoomViewPage = (props) => {
       });
     });
   }, []);
+  
+  const getVideoPlayerClassName = (roomDir) => {
+    const roomNameParts = roomDir.split("/");
+    const roomName = roomNameParts.pop();
+    let classNameText = roomName.replace(/ /g, "-").toLowerCase();
+    classNameText = `${classNameText}-clip`;
+    return classNameText;
+  };
 
+  const getVideoPlayerSrc = (roomDir) => {
+    const roomNameParts = roomDir.split("/");
+    const roomName = roomNameParts.pop();
+    let videoPath = `${assetsFolder}OverlayVideos/${roomName}.mp4`;
+    return videoPath;
+  };
   useEffect(() => {
     if (roomData) {
       const { Files: files, baseUrl, config } = roomData;
@@ -44,26 +61,38 @@ const RoomViewPage = (props) => {
     const key = sessionStorage.getItem("key") || "";
     let url = window.urlToOpen;
     url = key !== "" ? window.urlToOpen + "&key=" + key : url;
-    if(onButtonClick){
+    //console.log("handleBtnClick -> url", url)
+    if (onButtonClick) {
       onButtonClick();
+    } else {
+      //window.location = url;
+      setShowIframe(true);
     }
-    else
-      window.location = url;
   };
   return (
     <div className={classNames("at-roomview-container", className)}>
       {roomData && designImageProps && (
-        <RoomView
-          onRendered={() => {
-            setIsLoading(false);
-            console.log("room has been rendered");
-          }}
-          onRoomLoaded={() => {
-            // console.log("room has been loaded");
-          }}
-          roomData={roomData}
-          designImageProps={designImageProps}
-        />
+        <>
+          {hasOverlayVideo && (
+            <VideoPlayer
+              className={getVideoPlayerClassName(roomData.Dir)}
+              src={getVideoPlayerSrc(roomData.Dir)}
+            ></VideoPlayer>
+          )}
+
+          <RoomView
+            className={classNames({ "room-view-overlay": hasOverlayVideo })}
+            onRendered={() => {
+              setIsLoading(false);
+              console.log("room has been rendered");
+            }}
+            onRoomLoaded={() => {
+              // console.log("room has been loaded");
+            }}
+            roomData={roomData}
+            designImageProps={designImageProps}
+          />
+        </>
       )}
       {isLoading && (
         <div className="spinner-container">
@@ -74,6 +103,14 @@ const RoomViewPage = (props) => {
         <Button type="primary" loading={false} className="at-entrypoint-roomview-btn" onClick={handleBtnClick}>
           Open in exploRUG
         </Button>
+      )}
+      {showButton && (
+        <ExplorugIframePopup
+          className={classNames({'hidden': !showIframe})}
+          showExplorugPopup={showIframe}
+          explorugPopUpUrl={window.urlToOpen}
+          onClose={() => setShowIframe(false)}
+        ></ExplorugIframePopup>
       )}
     </div>
   );

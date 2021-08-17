@@ -4,6 +4,15 @@
   width: 100%;
   bottom: 0;
 }
+.hidden {
+  display: none;
+}
+.invisible {
+  opacity: 0 !important;
+  pointer-events: none;
+  //display: none !important;
+  z-index: -999;
+}
 .spinner-container {
   display: flex;
   justify-content: center;
@@ -18,7 +27,7 @@
   position: absolute;
   right: 15rem;
   bottom: 4rem;
-  z-index: 1000;
+  z-index: 100;
   min-width: 14rem;
   border-radius: 0.25rem;
   height: 3rem;
@@ -28,4 +37,42 @@
   color: var(--text-primary-active);
   background: var(--brand4);
   border-color: var(--brand4);
+}
+
+#bd_video_player {
+  position: absolute;
+  width: 100vw;
+  top: 0;
+  display: flex;
+  bottom: 0;
+  pointer-events: none;
+  &.outdoor-plutith-clip{
+    z-index: 10;
+    clip-path: polygon(0% 0, 100% 0%, 100% 53.7%, 0 53.7%);
+  }
+}
+
+video.object-fit {
+  width: 100%;
+}
+@media screen and (max-width:1200px) {
+  .at-entrypoint-roomview-btn {
+    bottom: 2rem;
+    height: 2rem;
+    line-height: 1rem;
+    min-width: auto;
+    left: 0;
+    margin: auto;
+    right: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+}
+@media screen and (max-width:800px) {
+  .at-entrypoint-roomview-btn {
+  
+    right: 3rem;
+    transform: none;
+    left: auto;
+}
 }

@@ -1,5 +1,5 @@
-console.log("process.env.SERVER", process.env.SERVER)
-export const assetsFolder = './';//process.env.SERVER !=='local'? 'https://cdn.explorug.com/explorugentry/roomview/':  './'; //'./'
+export const assetsFolder = './';//process.env.SERVER !=='local' ? 'https://cdn.explorug.com/explorugentry/roomview/':  './'; //'./'
+console.log("assetsFolder", assetsFolder)
 export const defaultRoomdata = {
   Dir: assetsFolder + "Rooms/Cozy Dining",
   Name: "Cozy Dining",

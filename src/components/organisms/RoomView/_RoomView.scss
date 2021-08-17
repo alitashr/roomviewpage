@@ -3,6 +3,9 @@
   height: 100%;
   position: absolute;
   background-color: var(--bg-secondary);
+  &.room-view-overlay{
+    background-color: transparent;
+  }
   & > canvas {
       position: absolute;
       margin: auto;
