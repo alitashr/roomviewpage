@@ -44,6 +44,22 @@ export const fetchBasicDetails=()=>{
       dispatch(setRoomConfig(config));
       dispatch(setRoomBaseUrl(baseUrl));
       
+      const defaultFloorOption = {
+        show: false,
+        floors: [],
+        activeFloor: {}
+      };
+      const { floorOptions = defaultFloorOption, scene1 } = config;
+      const roomOptions = {
+        carpetOptions: {
+          rotation: scene1.surface1.rotation,
+          position: scene1.surface1.position
+        },
+        floorOptions
+      };
+      console.log("readJSON -> roomOptions", roomOptions)
+      
+
     }); 
   }
 }

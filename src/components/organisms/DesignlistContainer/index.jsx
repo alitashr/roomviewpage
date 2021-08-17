@@ -2,7 +2,7 @@ import { Popover } from "antd";
 import React, { PropTypes, useEffect } from "react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getDesignThumbnails } from "../../../redux";
+import { getDesignThumbnails, onDesignThumbnailClick, setDesignDetails } from "../../../redux";
 import {CloseOutlined } from '@ant-design/icons';
 import { getAllFiles } from "../../../utils/treeutils";
 import AtButton from "../../atoms/AtButton";
@@ -22,11 +22,15 @@ const DesignlistContainer = (props) => {
     dispatch(getDesignThumbnails({ designs: files, tree }));
   }, [selectedFolder]);
   
-  const onThumbnailClick = (node, file, activeVariation) => {
-    
-    if (!file.designProps) return;
+  const onThumbnailClick = (node, index, activeVariation) => {
+    // //if (!file.designProps) return;
+    dispatch(onDesignThumbnailClick(node, index, activeVariation));
+    if(node.designProps)
+      dispatch(setDesignDetails({
+        name: node.name, 
+        fullpath: node.fullPath,
+        designProps: node.designProps}))
 
-    //console.log("onThumbnailClick--");
   };
   const handleVisibleChange = visible => {  
     setShowPopover(visible);

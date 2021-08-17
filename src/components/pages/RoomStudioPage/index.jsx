@@ -20,9 +20,6 @@ const RoomStudioPage = props => {
     }
     })
   });
-  useEffect (()=>{
-    console.log('roomstudiopage=> ',designlist)
-  }, [designlist])
 
   const onCustomizeRug = () => {
     window.open(window.urlToOpen, "_blank");
@@ -35,7 +32,8 @@ const RoomStudioPage = props => {
     window.open(myRoomUrl, "_blank");
   };
   return (
-    <div>
+    <div className='room-studio-page'>
+      
       <RoomContainer></RoomContainer>
       <div className="at-mainbuttons-container">
       <AtButton text="See in your own room" className="at-room-studio-page at-btn-myroom" onClick={onMyroomClick}></AtButton>

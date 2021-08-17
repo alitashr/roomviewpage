@@ -1,0 +1,53 @@
+{
+  "version": 2,
+  "vps": {},
+  "shots": ["Shot_1"],
+  "scenes": ["scene1"],
+  "canvases": [],
+  "name": "Background",
+  "width": 1920,
+  "height": 1080,
+  "dims": { "width": 1920, "height": 1080 },
+  "scene1": {
+    "overwriteFbx": true,
+    "modelUrl": "1sqm 1-for explorug.FBX",
+    "objects": ["surface1"],
+    "adjustObjects": [],
+    "hideObjects": [],
+    "Shot_1": {
+      "position": [917.5905761718727, 1188.2714843749993, 5981.32421875],
+      "rotation": [52574.06733562579, 68082.940970433, 342704.6336337594],
+      "target": [-2754.754638671875, 341.8931579589844, 3329.325439453125],
+      "fov": 29
+    },
+    "surface1": {
+      "position": [-2616.239501953125, 3.4849040508270264, 3146.492431640625],
+      "rotation": [-89.99999999999999, 0, 0],
+      "scale": [7.931631, 9.947719, 3.912754],
+      "resizable": true,
+      "textureRotation": 0
+    },
+    "floor": {
+      "position": [-2616.239501953125, -3, 3146.492431640625],
+      "rotation": [-89.99999999999999, 0, 0, null],
+      "scale": [1, 1, 1],
+      "resizable": true,
+      "textureRotation": 0
+    },
+    "objects3d": ["surface1", "floor"]
+  },
+  "floorOptions": {
+    "floors": [
+      { "path": "https://v3.explorug.com/files/Floors/Floor%201.jpg", "name": "Floor 1" },
+      { "path": "https://v3.explorug.com/files/Floors/Floor%202.jpg", "name": "Floor 2" },
+      { "path": "https://v3.explorug.com/files/Floors/Floor%203.jpg", "name": "Floor 3" },
+      { "path": "https://v3.explorug.com/files/Floors/Floor%204.jpg", "name": "Floor 4" },
+      { "path": "https://v3.explorug.com/files/Floors/Floor%205.jpg", "name": "Floor 5" },
+      { "path": "https://v3.explorug.com/files/Floors/Floor%206.jpg", "name": "Floor 6" },
+      { "path": "https://v3.explorug.com/files/Floors/Floor%207.jpg", "name": "Floor 7" },
+      { "path": "https://v3.explorug.com/files/Floors/Floor%208.jpg", "name": "Floor 8" }
+    ],
+    "activeFloor": { "path": "https://v3.explorug.com/files/Floors/Floor%204.jpg", "name": "Floor 4" }
+  },
+  "hasTransparencyMask": true
+}

@@ -35,7 +35,6 @@ const RoomViewPage = (props) => {
       });
     });
   }, []);
-  
   const getVideoPlayerClassName = (roomDir) => {
     const roomNameParts = roomDir.split("/");
     const roomName = roomNameParts.pop();

@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import React from 'react';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setDesignDetails } from '../../../redux/Design/designActions';
+import { setInitialDesignProps, setDesignName, setDesignImagePath } from '../../../redux/Design/designActions';
 import { fetchBasicDetails } from '../../../redux/Room/roomActions';
 import { preload } from '../../../utils/fileUtils';
 import RoomView from '../RoomView';
@@ -12,9 +12,11 @@ const RoomContainer = props => {
   const roomData = useSelector(state=> state.room);
   const dispatch = useDispatch();  
   const designData = useSelector(state=> state.design);
+  const designlist = useSelector(state=> state.designlist);
+ 
 
   useEffect(()=>{
-    dispatch(setDesignDetails()) 
+    dispatch(setInitialDesignProps()) 
     dispatch(fetchBasicDetails()) 
   },[]);
 
@@ -25,10 +27,25 @@ const RoomContainer = props => {
     }
   }, [roomData]);
 
-  useEffect(()=>{
+ 
+  useEffect(() => {
+    console.log('designData ', designData)
+  }, [designData]);
+  
+  useEffect(() => {
+    console.log(designData, designlist);
+    if(!designlist.selectedFile) return;
+    if(designlist.selectedFile.name.toLowerCase() !== designData.designName.toLowerCase()){
+      console.log('designlist ', designlist.selectedFile.name, designData.designName )
+      //dispatch(setDesignName(designlist.selectedFile.name));
 
-  }, [designData])
-
+      //(setDesignImagePath(designImagePath));
+  
+    }
+    
+  }, [designlist.selectedFile]);
+  
+ 
   
   return (
     <div className={classNames("at-roomview-container", className)}>

@@ -15,8 +15,7 @@ window.getUrlToOpen = () => {
   let page = "beyonddreams2";
   let design = sessionStorage.getItem("initdesign") || "";
   let room = sessionStorage.getItem("initview") || "";
-  console.log("room", room)
-
+ 
   let initDesign = "Designs/Artwork/Assorted Design/Thornure.ctf";
   let initView = "Cozy Dining.crf3d";
   let windowUrl = ""; //getExplorugUrl({page,initDesign, initView});;

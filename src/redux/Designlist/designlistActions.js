@@ -36,7 +36,6 @@ export const getDesignList = (initDesignPath='Designs/Artwork/Assorted Design/Th
         expandSelectedFolder: true,
         keepFoldersExpanded: false,
       });
-       console.log("fetchDesignList -> selectedFile, selectedFolder", selectedFile, selectedFolder);
       dispatch(
         setDesignList({
           tree: tree,
@@ -61,11 +60,12 @@ export const getDesignThumbnails = ({ designs, tree }) => {
   };
 };
 
-export const onDesignThumnailClick = (node, file, activeVariation) => {
+export const onDesignThumbnailClick = (node, index, activeVariation) => {
+ 
   return (dispatch) => {
     dispatch(
       selectDesign({
-        selectedFile: file,
+        selectedFile: node,
         activeVariation: activeVariation,
       })
     );

@@ -1,4 +1,7 @@
+import { createCanvas } from "../utils/canvasUtils";
+import { convertTilePointToName } from "../utils/converter";
 import { getJsonFromUrl } from "../utils/domUtils";
+import { readImageFromUrl } from "../utils/fileUtils";
 import { MD5 } from "../utils/md5";
 import { createUriSafe } from "../utils/stringUtils";
 import HttpClient from "./httpClient";
@@ -197,4 +200,107 @@ export const fetchColorList = params => {
   data.append("action", "colorlist");
   data.append("key", getApiKey());
   return postHttpClient(data);
+};
+export const fetchVisualizationTiles = ({ file, zoom, tiles, props, felt = 0 }) => {
+  felt = felt ? 1 : 0;
+  let data = new FormData();
+  data.append("action", "visualizationtiles");
+  data.append("key", getApiKey());
+  data.append("file", file);
+  data.append("zoom", zoom);
+  data.append("felt", felt);
+  data.append("tiles", JSON.stringify(tiles));
+  if (props) data.append("props", JSON.stringify(props));
+  return postHttpClient(data).then(processPath);
+};
+
+export const getRenderedDesign = async ({
+  designDetails,
+  fullpath,
+  hash,
+  zoom = 1,
+  felt = 0,
+  watermarkOptions = {},
+  applyKLRatio = true
+}) => {
+  const tileSize = 256;
+  return new Promise((resolve, reject) => {
+    let { Width, Height, KLRatio } = designDetails;
+    console.log("returnnewPromise -> designDetails", designDetails)
+    const canvasWidth = Width * zoom;
+    const canvasHeight = Height * zoom;
+    if (!applyKLRatio) KLRatio = 1;
+    const canvas = createCanvas(canvasWidth, canvasHeight * KLRatio);
+
+    let xTotal = Math.floor((canvasWidth - 1) / 256) + 1;
+    let yTotal = Math.floor((canvasHeight - 1) / 256) + 1;
+    let tilepoints = [];
+    for (let x = 0; x < xTotal; x++) {
+      for (let y = 0; y < yTotal; y++) {
+        tilepoints.push({ x, y, z: zoom, name: convertTilePointToName(x, y) });
+      }
+    }
+    const context = canvas.getContext("2d");
+    fetchVisualizationTiles({
+      file: fullpath,
+      zoom,
+      felt,
+      props: designDetails,
+      tiles: tilepoints.map(item => item.name)
+    }).then(basePath => {
+      let tileImagesLoaded = 0;
+      tilepoints.forEach((tilePoint, index) => {
+        const img = document.createElement("img");
+        img.setAttribute("crossOrigin", "Anonymous");
+        const { name } = tilePoint;
+        let filename = `${basePath}/${name}.rendered.jpg`;
+        if (hash && hash !== "") {
+          filename = `${filename}?t=${hash}`;
+        }
+        img.src = filename;
+        tilePoint.image = img;
+        img.onload = () => {
+          drawSingleTileInDesignCanvas(index);
+          if (tileImagesLoaded + 1 === tilepoints.length) {
+            drawWaterMarkIfNeeded();
+          }
+          tileImagesLoaded++;
+        };
+      });
+      const drawSingleTileInDesignCanvas = index => {
+        const tilepoint = tilepoints[index];
+        const startX = tilepoint.x * tileSize;
+        const startY = tilepoint.y * tileSize * KLRatio;
+        context.drawImage(
+          tilepoint.image,
+          startX,
+          startY,
+          tilepoint.image.width,
+          tilepoint.image.height * KLRatio
+        );
+      };
+    });
+
+    function drawWaterMarkIfNeeded() {
+      const { hasWatermark = false, logoUrl, width: watWid, opacity, position } = watermarkOptions;
+      if (!hasWatermark || !logoUrl) {
+        resolve(canvas);
+        return;
+      }
+      readImageFromUrl(logoUrl).then(logoImage => {
+        const width = watWid * 3 * zoom;
+        const height = (logoImage.height * width) / logoImage.width;
+
+        let padding = 15;
+        const padx = position[1] === 0.0 ? -padding : position[1] === 1.0 ? padding : 0;
+        const pady = position[0] === 0.0 ? -padding : position[0] === 1.0 ? padding : 0;
+        const startx = position[1] * (canvasWidth - width) - padx;
+        const starty = position[0] * (canvasHeight - height) - pady;
+
+        context.globalAlpha = opacity;
+        context.drawImage(logoImage, startx, starty, width, height);
+        resolve(canvas);
+      });
+    }
+  });
 };

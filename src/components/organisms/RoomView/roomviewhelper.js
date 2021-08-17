@@ -254,43 +254,47 @@ export default class RoomViewHelper {
 
   }
   }
+  renderImage({image, physicalWidth, physicalHeight}){
+    const { width, height } = image;
+    const designCanvas = createCanvas(width, height);
+    const ctx = designCanvas.getContext("2d");
+    ctx.drawImage(image, 0, 0);
+
+    const normapCanvas = createCanvas(width, height);
+    const ctxNorm = normapCanvas.getContext("2d");
+    ctxNorm.fillStyle = "rgb(127,127,255)";
+    ctxNorm.fillRect(0, 0, width, height);
+    let PhysicalWidth, PhysicalHeight;
+    if (!physicalWidth || !physicalHeight) {
+      const maxDims = { width: 1200, height: 1500 };
+      const { width: newWidth, height: newHeight } = resizeKeepingAspect(
+        { width, height },
+        maxDims,
+        "fit_inside"
+      );
+      PhysicalWidth = convertUnit("in", "ft", newWidth / 10);
+      PhysicalHeight = convertUnit("in", "ft", newHeight / 10);
+    } else {
+      PhysicalWidth = convertUnit("cm", "ft", physicalWidth);
+      PhysicalHeight = convertUnit("cm", "ft", physicalHeight);
+    }
+    const designDetails = {
+      Width: width,
+      Height: height,
+      PhysicalWidth,
+      PhysicalHeight,
+      Unit: "ft"
+    };
+
+    this.threeView.setCarpetTexture({ designDetails, designCanvas, normapCanvas });
+    this.updateGizmo();
+  }
+
   renderDesignFromCustomUrl({ customUrl, physicalWidth, physicalHeight }) {
     return new Promise((resolve, reject) => {
       readImage(customUrl)
         .then(image => {
-          const { width, height } = image;
-          const designCanvas = createCanvas(width, height);
-          const ctx = designCanvas.getContext("2d");
-          ctx.drawImage(image, 0, 0);
-
-          const normapCanvas = createCanvas(width, height);
-          const ctxNorm = normapCanvas.getContext("2d");
-          ctxNorm.fillStyle = "rgb(127,127,255)";
-          ctxNorm.fillRect(0, 0, width, height);
-          let PhysicalWidth, PhysicalHeight;
-          if (!physicalWidth || !physicalHeight) {
-            const maxDims = { width: 1200, height: 1500 };
-            const { width: newWidth, height: newHeight } = resizeKeepingAspect(
-              { width, height },
-              maxDims,
-              "fit_inside"
-            );
-            PhysicalWidth = convertUnit("in", "ft", newWidth / 10);
-            PhysicalHeight = convertUnit("in", "ft", newHeight / 10);
-          } else {
-            PhysicalWidth = convertUnit("cm", "ft", physicalWidth);
-            PhysicalHeight = convertUnit("cm", "ft", physicalHeight);
-          }
-          const designDetails = {
-            Width: width,
-            Height: height,
-            PhysicalWidth,
-            PhysicalHeight,
-            Unit: "ft"
-          };
-
-          this.threeView.setCarpetTexture({ designDetails, designCanvas, normapCanvas });
-          this.updateGizmo();
+          this.renderImage ({image, physicalWidth, physicalHeight})
           resolve();
         })
         .catch(err => {
