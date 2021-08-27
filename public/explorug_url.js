@@ -17,7 +17,7 @@ window.getUrlToOpen = () => {
   let room = sessionStorage.getItem("initview") || "";
  
   let initDesign = "Designs/Artwork/Assorted Design/Thornure.ctf";
-  let initView = "Cozy Dining.crf3d";
+  let initView = "internal/ARBEITSZIMMER1.crf3d";
   let windowUrl = ""; //getExplorugUrl({page,initDesign, initView});;
 
   if (room.toLowerCase() === AMBER_CABIN.toLowerCase()) {

@@ -13,7 +13,7 @@ export const readJSON = (url) => {
 };
 
 export const readImageFromUrl = (url) => {
-  return axios.get(url, { responseType: "blob" }).then((res) => res.data);
+  return axios.get(url, { responseType: "blob" }).then((res) => res.data).catch(err=> console.log('error loading image ',err));
 };
 export const readImage = (url, i) => {
   let imageUrl = url;

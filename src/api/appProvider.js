@@ -304,3 +304,34 @@ export const getRenderedDesign = async ({
     }
   });
 };
+
+let floorsFromServer = null;
+
+export const getFloor = () => {
+  const floorDomain = "https://v3.explorug.com/modules/vpsassets/apps/getjpeglist/default.aspx?folder=onlinevps/floors";
+  const floorAssetsDomain = "https://cdn.virtualrugstudio.com/";
+  const floorRelPath = "OnlineVPS/Floors/";
+  return new Promise((resolve, reject) => {
+    if (!floorsFromServer) {
+      HttpClient.post(floorDomain).then(response => {
+        let floorArr = [];
+        console.log(response)
+        floorArr = response.data.map((eachFloor, index) => {
+          let config = JSON.parse(eachFloor.config);
+          let obj = { ...config, path: `${floorAssetsDomain}${floorRelPath}${eachFloor.diffuse}`, thumb: `${floorAssetsDomain}${floorRelPath}${eachFloor.diffuse.replace('.jpg', '.thumb.jpg')}` };
+          return obj;
+        })
+        const returnObj = {
+          show: false,
+          floors: floorArr,
+          activeFloor: floorArr[0]
+        }
+        floorsFromServer = returnObj;
+        resolve(returnObj)
+      });
+    }
+    else {
+      resolve(floorsFromServer)
+    }
+  })
+}

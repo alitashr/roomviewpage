@@ -8,6 +8,7 @@ import RoomContainer from '../../organisms/RoomContatiner';
 import { getDesignList } from '../../../redux';
 import DesignlistContainer from '../../organisms/DesignlistContainer';
 import ColorlistContainer from '../../organisms/ColorListContainer';
+import FloorOptionsContainer from '../../organisms/FloorOptionsContainer/index-';
 
 const RoomStudioPage = props => {
   const designlist = useSelector(state=> state.designlist);
@@ -41,6 +42,7 @@ const RoomStudioPage = props => {
 
       <DesignlistContainer></DesignlistContainer>
       <ColorlistContainer></ColorlistContainer>
+      <FloorOptionsContainer></FloorOptionsContainer>
     
       </div>
       </div>

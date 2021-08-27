@@ -304,6 +304,7 @@ export default class RoomViewHelper {
   }
 
   renderFloor({ path }) {
+    console.log("renderFloor -> renderFloor")
     return new Promise((resolve, reject) => {
       if (!this.threeView) {
         resolve();
@@ -322,6 +323,7 @@ export default class RoomViewHelper {
         }
         this.floorCanvas.getContext("2d").drawImage(floorImage, 0, 0);
         this.threeView.setFloorTexture({ floorCanvas: this.floorCanvas });
+        console.log('floorImage.width, floorImage.height', floorImage.width, floorImage.height)
         resolve();
       });
     });
@@ -420,7 +422,8 @@ export default class RoomViewHelper {
   makeTransitionCanvas(options = {}) {
     // return
     const { clear = false } = options;
-    clearCanvas(this.transitionCanvas, this.transitionCanvas.width, this.transitionCanvas.height);
+    if(this.transitionCanvas)
+      clearCanvas(this.transitionCanvas, this.transitionCanvas.width, this.transitionCanvas.height);
     if (clear) return "clear";
     setCanvasDimensions(this.transitionCanvas, this.dimension, this.dimensionPixels);
     const transitionctx = this.transitionCanvas.getContext("2d");

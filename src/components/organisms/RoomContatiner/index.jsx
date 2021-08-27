@@ -34,7 +34,8 @@ const RoomContainer = props => {
   
   useEffect(() => {
     console.log(designData, designlist);
-    if(!designlist.selectedFile) return;
+    if(!designlist.selectedFile || !designData.designName) return;
+    
     if(designlist.selectedFile.name.toLowerCase() !== designData.designName.toLowerCase()){
       console.log('designlist ', designlist.selectedFile.name, designData.designName )
       //dispatch(setDesignName(designlist.selectedFile.name));

@@ -11,7 +11,8 @@ import { getRenderedDesign} from "../../../api/appProvider"
 let roomViewHelper = new RoomViewHelper();
 const   RoomView = (props) => {
   const { roomData, designImageProps, onRendered, onRoomLoaded, className='' } = props;
-  const { Name: roomName, Dir: dir, Files, baseUrl, config } = roomData;
+  const { Name: roomName, Dir: dir, Files, baseUrl, config, activeFloor } = roomData;
+  console.log("RoomView -> activeFloor", activeFloor)
   const { designImagePath, designName, designDetails, fullpath } = designImageProps;
 
   const containerRef = useRef(null);
@@ -20,6 +21,7 @@ const   RoomView = (props) => {
   const maskCanvasRef = useRef(null);
   const shadowCanvasRef = useRef(null);
   const inputCanvasRef = useRef(null);
+  const transitionCanvasRef = useRef();
 
   const prevRoomDetails = usePrevious(roomData);
   const prevDesignImagePath = usePrevious(designImagePath);
@@ -48,6 +50,7 @@ const   RoomView = (props) => {
     const shadowCanvas = createCanvas(width, height);
     const container = { clientWidth: width, clientHeight: height };
     const inputCanvas = createCanvas(width, height);
+    const transitionCanvas = createCanvas(width, height);
     const canvasConfig = {
         bgCanvas,
         threeCanvas,
@@ -55,6 +58,7 @@ const   RoomView = (props) => {
         shadowCanvas,
         container,
         inputCanvas,
+        transitionCanvas
     };
     const rh = new RoomViewHelper();
     rh.initCanvas(canvasConfig);
@@ -95,16 +99,39 @@ const   RoomView = (props) => {
       shadowCanvas: shadowCanvasRef.current,
       container: containerRef.current,
       inputCanvas: inputCanvasRef.current,
+      transitionCanvas: transitionCanvasRef.current,
+      
     };
     roomViewHelper.initCanvas(canvasConfig);
   });
   useEffect(() => {
+    console.log("RoomView -> activeFloor", activeFloor)
+    if(!activeFloor) return;
+    //if (isRendering || !activeFloor || designDetailState.loading) return;
+
+    const updateFloor = async () => {
+      roomViewHelper.makeTransitionCanvas();
+     // setLoading(true);
+      await roomViewHelper.renderFloor(activeFloor);
+      await roomViewHelper.updateShadow();
+     // setLoading(false);
+    };
+    updateFloor();
+  }, [activeFloor]);
+ 
+  useEffect(() => {
     let la = true;
+    const renderFloorInRoom = activeFloor => {
+    console.log("useEffect, renderFloorInRoom -> activeFloor", activeFloor)
+      if (!activeFloor) return Promise.resolve();
+      return roomViewHelper.renderFloor(activeFloor);
+    };
+
     const loadRoom = async () => {  
       try {
         //if room has been changed
         if (prevRoomDetails !== roomData) {
-         if (!la) return;
+          roomViewHelper.makeTransitionCanvas();
           if (!Files.length) return;
           const files = Files.map((file) => (file[0] === "/" ? file : "/" + file));
           await Promise.all(roomViewHelper.initConfig({ baseUrl, config, files }));
@@ -126,6 +153,8 @@ const   RoomView = (props) => {
             await roomViewHelper.renderDesignFromCustomUrl({
               customUrl: designImagePath,
             });
+            await renderFloorInRoom(activeFloor);
+            
             onRendered();
           } else {
             await roomViewHelper.renderFromJpg({ designImage: designImagePath });
@@ -143,7 +172,11 @@ const   RoomView = (props) => {
             applyKLRatio: false
           });
           roomViewHelper.renderImage({image: renderedDesignImage}); 
+          await renderFloorInRoom(activeFloor);
+           
           roomViewHelper.updateShadow();
+          await roomViewHelper.makeTransitionCanvas({ clear: true });
+       
         }
         else{
           onRendered();
@@ -155,6 +188,9 @@ const   RoomView = (props) => {
       }
     };
     loadRoom();
+    return () => {
+      la = false;
+    };
   }, [roomData, designImageProps]);
 
   const handleInputStart = (e) => {
@@ -174,6 +210,7 @@ const   RoomView = (props) => {
         <canvas className="canvas" ref={threeCanvasRef} style={{ zIndex: 2, pointerEvents: "all" }} />
         <canvas className="canvas" ref={maskCanvasRef} style={{ zIndex: 3, pointerEvents: "none" }} />
         <canvas className="canvas" ref={shadowCanvasRef} style={{ zIndex: 4, pointerEvents: "none" }} />
+        <canvas className="canvas" ref={transitionCanvasRef} style={{ zIndex: 5, pointerEvents: "none" }} />
         <InputCanvas
           zIndex={50}
           pointerEvent

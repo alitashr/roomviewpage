@@ -89,7 +89,9 @@ export default class ThreeViewHelper {
     this.objConf = this.sceneConfig[this.surfaceName];
     const { position = [0, 0, 0], rotation = [90, 0, 0] } = this.objConf;
     if (this.objectLoaded) {
-      this.scene.remove(this.object)
+      this.objects3d.forEach(object3d => {
+        this.scene.remove(object3d);
+      });
       const tarObj = this.scene.getObjectByName("TargetObject")
       if (tarObj)
         this.scene.remove(tarObj)
@@ -197,6 +199,12 @@ export default class ThreeViewHelper {
     // designTexture.minFilter = THREE.LinearFilter;
     designTexture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
     normalTexture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+    designTexture.wrapS = designTexture.wrapT = THREE.RepeatWrapping;
+    normalTexture.wrapS = normalTexture.wrapT = THREE.RepeatWrapping;
+    designTexture.generateMipmaps = false;
+    designTexture.minFilter = THREE.LinearFilter;
+    designTexture.magFilter = THREE.LinearFilter;
+    
     this.material = new THREE.MeshStandardMaterial({
       map: designTexture,
       normalMap: normalTexture,
@@ -212,6 +220,26 @@ export default class ThreeViewHelper {
     this.carpetMesh.material.needsUpdate = true
     this.render()
   }
+  setFloorTexture({ floorCanvas }) {
+    if (!this.floor || !this.floor.material || !this.renderer) return;
+
+    if (!this.floor.material.map) {
+      const texture = new CanvasTexture(floorCanvas);
+      texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      this.floor.material.map = texture;
+    }
+    this.floor.material.map.needsUpdate = true;
+    this.floor.material.needsUpdate = true;
+    if (!this.floor.visible) this.floor.visible = true;
+    this.render();
+  }
+  
+  changeFloorVisibility(visible) {
+    if(this.floor){ this.floor.visible = visible;
+    this.render();}
+  }
+
   render() {
     this.renderer.render(this.scene, this.camera);
   }

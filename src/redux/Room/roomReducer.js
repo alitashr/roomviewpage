@@ -5,7 +5,9 @@ const initialState = {
   Name:'',
   Files:[],
   config: null,
-  baseUrl:''
+  baseUrl:'',
+  floorOptions:null,
+  activeFloor: null
 }
 
 const roomReducer = (state=initialState, action)=>{
@@ -27,6 +29,17 @@ const roomReducer = (state=initialState, action)=>{
       return {
         ...state,
         baseUrl: action.payload
+      }
+    case roomActions.SET_FLOOR_OPTIONS:
+      return {
+        ...state,
+        floorOptions: action.payload
+      }
+    case roomActions.SET_ACTIVE_FLOOR_OPTION:
+      return {
+        ...state,
+        activeFloor: action.payload
+        
       }
     default:
       return state;
