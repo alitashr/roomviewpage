@@ -6,13 +6,13 @@ import { downloadRendered3dIllHQ, downloadRendered3dIllNQ } from "../../../Middl
 import { createCanvas, downloadImageData } from "../../../utils/canvasUtils";
 import InputCanvas from "../../molecules/InputCanvas";
 import RoomViewHelper from "./roomviewhelper";
-import { getRenderedDesign} from "../../../api/appProvider"
+import { getRenderedDesign } from "../../../api/appProvider";
 
 let roomViewHelper = new RoomViewHelper();
-const   RoomView = (props) => {
-  const { roomData, designImageProps, onRendered, onRoomLoaded, className='' } = props;
+const RoomView = (props) => {
+  const { roomData, designImageProps, onRendered, onRoomLoaded, className = "" } = props;
   const { Name: roomName, Dir: dir, Files, baseUrl, config, activeFloor } = roomData;
-  console.log("RoomView -> activeFloor", activeFloor)
+  console.log("RoomView -> activeFloor", activeFloor);
   const { designImagePath, designName, designDetails, fullpath } = designImageProps;
 
   const containerRef = useRef(null);
@@ -29,68 +29,15 @@ const   RoomView = (props) => {
   const windowSize = useWindowSize();
   const [isDownloading, setIsDownloading] = useState(false);
 
-  useEffect(()=>{
- //window.downloadRendered3dIllNQ = downloadRendered3dIllNQ({ designName, roomName, roomViewHelper });
- window.downloadRendered3dIllNQ = async () => {
-  const mime = "jpeg";
-  const downloadName = `${designName} in ${roomName}.${mime}`;
-  roomViewHelper.downloadRendering(downloadName, mime);
-};
+  useEffect(() => {
+    window.downloadRendered3dIllNQ = async () => {};
+    window.downloadRendered3dIllHQ = async () => {};
+  }, []);
 
-  window.downloadRendered3dIllHQ = async () => {
-    if (isDownloading) return;
-    if(setIsDownloading) setIsDownloading(true);
-    const { Name: roomName, Dir: dir, Files: files, baseUrl, config } = roomData;
-    const mime = "jpg";
-    const downloadName = `${designName} in ${roomName}.${mime}`;  
-    const { width, height } = config;
-    const bgCanvas = createCanvas(width, height);
-    const threeCanvas = createCanvas(width, height);
-    const maskCanvas = createCanvas(width, height);
-    const shadowCanvas = createCanvas(width, height);
-    const container = { clientWidth: width, clientHeight: height };
-    const inputCanvas = createCanvas(width, height);
-    const transitionCanvas = createCanvas(width, height);
-    const canvasConfig = {
-        bgCanvas,
-        threeCanvas,
-        maskCanvas,
-        shadowCanvas,
-        container,
-        inputCanvas,
-        transitionCanvas
-    };
-    const rh = new RoomViewHelper();
-    rh.initCanvas(canvasConfig);
-    await Promise.all(rh.initConfig({ baseUrl, config, files }));
-    rh.updateBackground();
-  
-    rh.updateMask();
-    await rh.updatethreeCanvas();
-    if (typeof designImagePath === "string") {
-      await roomViewHelper.renderDesignFromCustomUrl({
-        customUrl: designImagePath,
-      });
-    } else {
-      await roomViewHelper.renderFromJpg({ designImage: designImagePath });
-    }
-  
-    const objectConfig = roomViewHelper.threeView.getObjectConfig();
-    if (objectConfig) {
-        rh.threeView.carpetMesh.position.copy(objectConfig.position);
-        rh.threeView.carpetMesh.rotation.copy(objectConfig.rotation);
-        rh.threeView.render();
-    }
-    await rh.updateShadow();
-    const renderedCanvas = rh.renderInCanvas();
-    setIsDownloading(false);
-    downloadImageData(renderedCanvas, downloadName, "image/" + mime);
-  };
-  
-  },[])
   useEffect(() => {
     roomViewHelper.resize(windowSize);
   }, [windowSize]);
+
   useMount(() => {
     const canvasConfig = {
       bgCanvas: bgCanvasRef.current,
@@ -99,41 +46,42 @@ const   RoomView = (props) => {
       shadowCanvas: shadowCanvasRef.current,
       container: containerRef.current,
       inputCanvas: inputCanvasRef.current,
-      transitionCanvas: transitionCanvasRef.current,
-      
+      transitionCanvas: transitionCanvasRef.current
     };
     roomViewHelper.initCanvas(canvasConfig);
   });
   useEffect(() => {
-    console.log("RoomView -> activeFloor", activeFloor)
-    if(!activeFloor) return;
+    console.log("RoomView -> activeFloor", activeFloor);
+    if (!activeFloor) return;
     //if (isRendering || !activeFloor || designDetailState.loading) return;
 
     const updateFloor = async () => {
       roomViewHelper.makeTransitionCanvas();
-     // setLoading(true);
+      // setLoading(true);
       await roomViewHelper.renderFloor(activeFloor);
       await roomViewHelper.updateShadow();
-     // setLoading(false);
+      // setLoading(false);
     };
     updateFloor();
   }, [activeFloor]);
- 
+
   useEffect(() => {
     let la = true;
-    const renderFloorInRoom = activeFloor => {
-    console.log("useEffect, renderFloorInRoom -> activeFloor", activeFloor)
+    const renderFloorInRoom = (activeFloor) => {
+      console.log("useEffect, renderFloorInRoom -> activeFloor", activeFloor);
       if (!activeFloor) return Promise.resolve();
       return roomViewHelper.renderFloor(activeFloor);
     };
 
-    const loadRoom = async () => {  
+    const loadRoom = async () => {
       try {
         //if room has been changed
         if (prevRoomDetails !== roomData) {
           roomViewHelper.makeTransitionCanvas();
           if (!Files.length) return;
           const files = Files.map((file) => (file[0] === "/" ? file : "/" + file));
+          console.log("loadRoom -> baseUrl", baseUrl)
+          
           await Promise.all(roomViewHelper.initConfig({ baseUrl, config, files }));
           if (!la) return;
           roomViewHelper.updateBackground();
@@ -154,34 +102,30 @@ const   RoomView = (props) => {
               customUrl: designImagePath,
             });
             await renderFloorInRoom(activeFloor);
-            
+
             onRendered();
           } else {
             await roomViewHelper.renderFromJpg({ designImage: designImagePath });
             onRendered();
           }
           roomViewHelper.updateShadow();
-        }
-        else if(prevDesignDetails!== designDetails){
+        } else if (prevDesignDetails !== designDetails) {
           await roomViewHelper.updatethreeCanvas();
-            if (!la) return;          
-           const renderedDesignImage = await getRenderedDesign({
+          if (!la) return;
+          const renderedDesignImage = await getRenderedDesign({
             designDetails: designDetails,
             fullpath,
             zoom: 1,
-            applyKLRatio: false
+            applyKLRatio: false,
           });
-          roomViewHelper.renderImage({image: renderedDesignImage}); 
+          roomViewHelper.renderImage({ image: renderedDesignImage });
           await renderFloorInRoom(activeFloor);
-           
+
           roomViewHelper.updateShadow();
           await roomViewHelper.makeTransitionCanvas({ clear: true });
-       
-        }
-        else{
+        } else {
           onRendered();
         }
-        
       } catch (error) {
         console.error(error);
         return;
@@ -202,7 +146,7 @@ const   RoomView = (props) => {
   const handleInputEnd = (e) => {
     roomViewHelper.mouseDownTouchEnd(e);
   };
-  
+
   return (
     <React.Fragment>
       <div className={classNames("canvas-container", className)} ref={containerRef}>

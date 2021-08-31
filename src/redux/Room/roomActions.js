@@ -1,4 +1,5 @@
 import { assetsFolder, defaultRoomdata } from "../../constants/constants";
+import { config2Point1 } from "../../MiddlewareFunc/ConfigMatcher";
 import { getRoomData } from "../../MiddlewareFunc/getInfo";
 import { readJSON } from "../../utils/fileUtils";
 
@@ -14,53 +15,60 @@ export const roomActions = {
   SET_ROOM_BASEURL,
   SET_FLOOR_OPTIONS,
   SET_ACTIVE_FLOOR_OPTION,
-}
+};
 
-const setRoomConfig = (config)=>{
+const setRoomConfig = (config) => {
   return {
     type: SET_ROOM_CONFIG,
-    payload: config
-  } 
-}
-const setRoomBasicDetails = (roomData)=>{
+    payload: config,
+  };
+};
+const setRoomBasicDetails = (roomData) => {
   return {
     type: SET_ROOM_BASIC_DETAILS,
-    payload: roomData
-  }
-}
-const setRoomBaseUrl = (baseUrl)=>{
+    payload: roomData,
+  };
+};
+const setRoomBaseUrl = (baseUrl) => {
   return {
     type: SET_ROOM_BASEURL,
-    payload:baseUrl
-  }
-}
-export const setFloorOptions = (payload)=>{
+    payload: baseUrl,
+  };
+};
+export const setFloorOptions = (payload) => {
   return {
     type: SET_FLOOR_OPTIONS,
-    payload:payload
-  }
-}
-export const setActiveFloorOption = (payload)=>{
-console.log("setActiveFloorOption -> payload", payload)
+    payload: payload,
+  };
+};
+export const setActiveFloorOption = (payload) => {
+  console.log("setActiveFloorOption -> payload", payload);
   return {
     type: SET_ACTIVE_FLOOR_OPTION,
-    payload:payload
-  }
-}
+    payload: payload,
+  };
+};
 
-export const fetchBasicDetails=()=>{
-  return (dispatch)=>{
+export const fetchBasicDetails = () => {
+  return (dispatch) => {
     let roomPath = sessionStorage.getItem("initview") || "";
     const roomDataJSON = getRoomData(defaultRoomdata, roomPath);
-    dispatch(setRoomBasicDetails(roomDataJSON))
+    dispatch(setRoomBasicDetails(roomDataJSON));
     const baseUrl = assetsFolder + roomDataJSON.Dir;
+    readJSON(`${baseUrl}/config.json`).then(async (config) => {
+      const name = roomDataJSON.Name || "";
+      let roomData = { ...roomDataJSON, config, baseUrl };
 
-    readJSON(`${baseUrl}/config.json`).then((config) => {
-      const roomData = { ...roomDataJSON, config, baseUrl };
-
+      // if (config.version !== 2.1) {
+      //   let mappedConfig = await config2Point1(name, baseUrl, config);
+      //   dispatch(setRoomConfig(mappedConfig));
+      // } else {
+      //   dispatch(setRoomConfig(config));
+      // }
       dispatch(setRoomConfig(config));
+     
       dispatch(setRoomBaseUrl(baseUrl));
-      
+
       // const defaultFloorOption = {
       //   show: false,
       //   floors: [],
@@ -76,6 +84,6 @@ export const fetchBasicDetails=()=>{
       // };
       // console.log("readJSON -> roomOptions", roomOptions);
       //dispatch(setRoomOptions(roomOptions))
-    }); 
-  }
-}
+    });
+  };
+};

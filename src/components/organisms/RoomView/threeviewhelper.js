@@ -8,7 +8,6 @@ import { makeUrl } from "../../../utils/fileUtils";
 
 export default class ThreeViewHelper {
   constructor() {
-
     this.scene = new THREE.Scene();
 
     this.textureLoader = new THREE.TextureLoader();
@@ -18,45 +17,82 @@ export default class ThreeViewHelper {
     this.carpetLoaded = false;
     this.objectLoaded = false;
   }
-  init({ canvas, config = {}, shots, dims = {}, surfaceName = "surface1", resolution }) {
+  init({ canvas, config = {}, shots, dims = {}, surfaceName = "surface1", resolution, roomType, baseUrl }) {
     let { width = window.innerWidth, height = window.innerHeight } = dims;
-    this.w = width
-    this.h = height
+    this.w = width;
+    this.h = height;
     this.surfaceName = surfaceName;
     this.sceneConfig = config;
     this.objProps = config[surfaceName];
-
+    this.baseUrl = baseUrl;
+    this.roomType = roomType;
+    
     this.renderer = renderer(canvas, { ...config, width, height, resolution });
     const camConfig = config[shots[0]];
     this.camera = perspectiveCamera({ ...camConfig, width, height });
     this.scene.add(this.camera);
-    window.scene = this.scene
+    window.scene = this.scene;
     this.orbit = addOrbitControl(this.renderer, this.scene, this.camera, camConfig);
     this.orbit.enabled = false;
     // this.orbit.screenSpacePanning = true;
   }
   setupLights() {
-    this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.9)
-    this.scene.add(this.directionalLight)
-    this.ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
-    this.scene.add(this.ambientLight)
+    this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    this.scene.add(this.directionalLight);
+    this.ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    this.scene.add(this.ambientLight);
   }
   removeLights() {
-    if (this.directionalLight)
-      this.scene.remove(this.directionalLight)
-    if (this.ambientLight)
-      this.scene.remove(this.ambientLight)
+    if (this.directionalLight) this.scene.remove(this.directionalLight);
+    if (this.ambientLight) this.scene.remove(this.ambientLight);
+  }
+
+  setupSceneObjects({ fbxUrl }) {
+    switch (this.roomType) {
+      case "illustration":
+        return this.setup3dObject({ fbxUrl });
+      default:
+        const loadCarpet = this.setupCarpet({ fbxUrl });
+        this.removeObjIfExists("floor");
+        this.removeObjIfExists("wallpaper");
+
+        const promiseArr = [loadCarpet];
+        if (this.sceneConfig.objects3d) {
+          const floorName = this.findObjInConfig("floor");
+          const wallpaperName = this.findObjInConfig("wallpaper");
+
+          if (floorName) {
+            const loadFloor = this.setupFloor(floorName);
+            promiseArr.push(loadFloor);
+          }
+          if (wallpaperName) {
+            const loadWallpaper = this.setupWallpaper(wallpaperName);
+            promiseArr.push(loadWallpaper);
+          }
+        }
+
+        return Promise.all(promiseArr);
+    }
+  }
+  removeObjIfExists(objName) {
+    const obj = this.scene.getObjectByName(objName);
+    if (obj) {
+      this.scene.remove(obj);
+    }
+  }
+  findObjInConfig(objName) {
+    return this.sceneConfig.objects3d.find((item) => item.toLowerCase() === objName);
   }
   setup3dObject({ fbxUrl }) {
-    const objKey = "surface1"
+    const objKey = "surface1";
     this.objConf = this.sceneConfig[objKey];
     if (this.carpetLoaded) {
-      this.scene.remove(this.carpetMesh)
-      const tarObj = this.scene.getObjectByName("TargetObject")
-      this.scene.remove(tarObj)
+      this.scene.remove(this.carpetMesh);
+      const tarObj = this.scene.getObjectByName("TargetObject");
+      this.scene.remove(tarObj);
 
-      this.carpetLoaded = false
-      this.removeLights()
+      this.carpetLoaded = false;
+      this.removeLights();
     }
     const { position = [0, 0, 0], rotation = [90, 0, 0], scale } = this.objConf;
     return new Promise((resolve, reject) => {
@@ -65,48 +101,84 @@ export default class ThreeViewHelper {
         this.object.scale.fromArray(scale);
         this.object.rotation.fromArray(convertArrIntoRad(rotation));
         if (this.material) {
-          this.object.material = this.material
-          this.object.material.needsUpdate = true
-          this.render()
+          this.object.material = this.material;
+          this.object.material.needsUpdate = true;
+          this.render();
         }
-        this.objectLoaded = true
-        this.render()
+        this.objectLoaded = true;
+        this.render();
         resolve();
-      }
+      };
       if (!this.objectLoaded)
-
-        this.fbxLoader.load(fbxUrl, obj => {
-
-          this.object = obj.getObjectByName(objKey)
-          this.scene.add(this.object);
-          setup()
-        }, undefined, console.error);
-      else setup()
-    })
-
+        this.fbxLoader.load(
+          fbxUrl,
+          (obj) => {
+            this.object = obj.getObjectByName(objKey);
+            this.scene.add(this.object);
+            setup();
+          },
+          undefined,
+          console.error
+        );
+      else setup();
+    });
   }
+  setupFloor() {
+    return new Promise((resolve, reject) => {
+      const { modelUrl } = this.sceneConfig;
+      const fbxUrl = makeUrl(this.baseUrl, modelUrl);
+      const objKey = "floor";
+      const objConf = this.sceneConfig[objKey];
+      const { position = [0, 0, 0], rotation = [90, 0, 0], scale } = objConf;
+      const floor =
+        this.scene.getObjectByName("floor") ||
+        this.scene.getObjectByName("Floor") ||
+        this.scene.getObjectByName("FLOOR");
+      if (floor) {
+        this.scene.remove(floor);
+      }
+      const setup = () => {
+        this.floor.position.fromArray(position);
+        this.floor.scale.fromArray(scale);
+        this.floor.rotation.fromArray(convertArrIntoRad(rotation));
+        this.floor.material = new MeshBasicMaterial({ side: THREE.DoubleSide, transparent: true });
+        this.floor.material.needsUpdate = true;
+        resolve();
+      };
+      this.fbxLoader.load(
+        fbxUrl,
+        (obj) => {
+          this.floor = obj.getObjectByName("floor") || obj.getObjectByName("Floor") || obj.getObjectByName("FLOOR");
+          this.scene.add(this.floor);
+          setup();
+        },
+        undefined,
+        console.error
+      );
+    });
+  }
+
   setupCarpet({ fbxUrl }) {
     this.objConf = this.sceneConfig[this.surfaceName];
     const { position = [0, 0, 0], rotation = [90, 0, 0] } = this.objConf;
     if (this.objectLoaded) {
-      this.objects3d.forEach(object3d => {
+      this.objects3d.forEach((object3d) => {
         this.scene.remove(object3d);
       });
-      const tarObj = this.scene.getObjectByName("TargetObject")
-      if (tarObj)
-        this.scene.remove(tarObj)
-      this.removeLights()
-      this.objectLoaded = false
+      const tarObj = this.scene.getObjectByName("TargetObject");
+      if (tarObj) this.scene.remove(tarObj);
+      this.removeLights();
+      this.objectLoaded = false;
     }
     return new Promise((resolve, reject) => {
       const setup = () => {
-        // this.originalMesh = 
+        // this.originalMesh =
         this.carpetMesh.position.fromArray(position);
         const { flagged } = this.sceneConfig;
-        let fact = flagged ? 10 : 1
-        this.directionalLight.position.set(position[0] - 3000 / fact, position[1] + 3000 / fact, position[2])
+        let fact = flagged ? 10 : 1;
+        this.directionalLight.position.set(position[0] - 3000 / fact, position[1] + 3000 / fact, position[2]);
         var targetObject = new THREE.Object3D();
-        targetObject.name = "TargetObject"
+        targetObject.name = "TargetObject";
         targetObject.position.set(...position);
         this.scene.add(targetObject);
         this.directionalLight.target = targetObject;
@@ -114,59 +186,59 @@ export default class ThreeViewHelper {
         // this.scene.add(helper);
 
         this.carpetMesh.rotation.fromArray(convertArrIntoRad(rotation.slice(0, 3)));
-        if (this.designDetails)
-          this.setCarpetScale(this.designDetails)
+        if (this.designDetails) this.setCarpetScale(this.designDetails);
 
         if (this.material) {
-          this.carpetMesh.material = this.material
-          this.carpetMesh.material.needsUpdate = true
-          this.render()
+          this.carpetMesh.material = this.material;
+          this.carpetMesh.material.needsUpdate = true;
+          this.render();
         }
-        this.carpetLoaded = true
-        this.render()
+        this.carpetLoaded = true;
+        this.render();
         resolve();
-      }
+      };
       if (!this.carpetLoaded)
-
-        this.fbxLoader.load(fbxUrl, obj => {
-
-          this.carpetMesh = obj.getObjectByName(this.surfaceName)
-          this.scene.add(this.carpetMesh);
-          this.setupLights()
-          setup()
-        }, undefined, console.error);
-      else setup()
-    })
-
+        this.fbxLoader.load(
+          fbxUrl,
+          (obj) => {
+            this.carpetMesh = obj.getObjectByName(this.surfaceName);
+            this.scene.add(this.carpetMesh);
+            this.setupLights();
+            setup();
+          },
+          undefined,
+          console.error
+        );
+      else setup();
+    });
   }
   setCarpetScale(designDetails) {
-    const { PhysicalWidth, PhysicalHeight, Unit } = designDetails
+    const { PhysicalWidth, PhysicalHeight, Unit } = designDetails;
     if (!PhysicalWidth || !PhysicalHeight || !Unit) {
-      console.error("Could not set carept scale")
-      return
+      console.error("Could not set carept scale");
+      return;
     }
     const { flagged } = this.sceneConfig;
-    let fact = flagged ? 10 : 1
+    let fact = flagged ? 10 : 1;
 
-    const wid = convertUnit(Unit, "ft", PhysicalWidth)
-    const hgt = convertUnit(Unit, "ft", PhysicalHeight)
-    this.carpetMesh.scale.set(wid / fact, hgt / fact, 2 / fact)
-
+    const wid = convertUnit(Unit, "ft", PhysicalWidth);
+    const hgt = convertUnit(Unit, "ft", PhysicalHeight);
+    this.carpetMesh.scale.set(wid / fact, hgt / fact, 2 / fact);
   }
   setObjectVisibility(visibility) {
-    this.object.visible = visibility
-    this.render()
+    this.object.visible = visibility;
+    this.render();
   }
   setCarpetVisibility(visibility) {
-    this.carpetMesh.visible = visibility
-    this.render()
+    this.carpetMesh.visible = visibility;
+    this.render();
   }
   setObjectTexture({ designDetails, designCanvas }) {
     return new Promise((resolve, reject) => {
       const { surfaceUnit = "in", doubleSide } = this.objProps;
       const PhysicalWidth = convertUnit(designDetails.Unit, surfaceUnit, designDetails.PhysicalWidth);
       const PhysicalHeight = convertUnit(designDetails.Unit, surfaceUnit, designDetails.PhysicalHeight);
-      this.designDetails = { ...designDetails, PhysicalHeight, PhysicalWidth, Unit: surfaceUnit }
+      this.designDetails = { ...designDetails, PhysicalHeight, PhysicalWidth, Unit: surfaceUnit };
       const designTexture = new CanvasTexture(designCanvas);
       designTexture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
       designTexture.wrapS = designTexture.wrapT = THREE.RepeatWrapping;
@@ -177,21 +249,19 @@ export default class ThreeViewHelper {
         alphaTest: 0.5,
       });
       if (!this.object) {
-        console.error("could not find the object")
-        resolve()
+        console.error("could not find the object");
+        resolve();
         return;
       }
       this.object.material = this.material;
       this.object.material.needsUpdate = true;
 
-      this.render()
-      resolve()
-
-    })
-
+      this.render();
+      resolve();
+    });
   }
   setCarpetTexture({ designDetails, designCanvas, normapCanvas }) {
-    this.designDetails = designDetails
+    this.designDetails = designDetails;
 
     const designTexture = new CanvasTexture(designCanvas);
     const normalTexture = new CanvasTexture(normapCanvas);
@@ -204,7 +274,7 @@ export default class ThreeViewHelper {
     designTexture.generateMipmaps = false;
     designTexture.minFilter = THREE.LinearFilter;
     designTexture.magFilter = THREE.LinearFilter;
-    
+
     this.material = new THREE.MeshStandardMaterial({
       map: designTexture,
       normalMap: normalTexture,
@@ -212,13 +282,13 @@ export default class ThreeViewHelper {
       metalness: 0.1,
       needsUpdate: true,
       transparent: true,
-      side: THREE.FrontSide
-    })
+      side: THREE.FrontSide,
+    });
     if (!this.carpetMesh) return;
-    this.setCarpetScale(this.designDetails)
-    this.carpetMesh.material = this.material
-    this.carpetMesh.material.needsUpdate = true
-    this.render()
+    this.setCarpetScale(this.designDetails);
+    this.carpetMesh.material = this.material;
+    this.carpetMesh.material.needsUpdate = true;
+    this.render();
   }
   setFloorTexture({ floorCanvas }) {
     if (!this.floor || !this.floor.material || !this.renderer) return;
@@ -234,10 +304,12 @@ export default class ThreeViewHelper {
     if (!this.floor.visible) this.floor.visible = true;
     this.render();
   }
-  
+
   changeFloorVisibility(visible) {
-    if(this.floor){ this.floor.visible = visible;
-    this.render();}
+    if (this.floor) {
+      this.floor.visible = visible;
+      this.render();
+    }
   }
 
   render() {
@@ -252,17 +324,17 @@ export default class ThreeViewHelper {
   mouseDownTouchStart(e) {
     if (!this.carpetMesh) return;
     let intersect = this.raycastMouseOnCarpet(e);
-    if (!intersect) return
+    if (!intersect) return;
     const objPos = this.carpetMesh.position.clone();
     this.offset.copy(intersect.point).sub(objPos);
-    return intersect
+    return intersect;
   }
 
   mouseTouchMove(e) {
     if (!this.carpetMesh) return;
-    //TODO:instead of casting on carpet, cast on an infinite plane 
+    //TODO:instead of casting on carpet, cast on an infinite plane
     let intersect = this.raycastMouseOnCarpet(e);
-    if (!intersect) return
+    if (!intersect) return;
     const objPos = this.carpetMesh.position.clone();
     const sub = intersect.point.sub(this.offset);
     sub.y = objPos.y;
@@ -278,7 +350,7 @@ export default class ThreeViewHelper {
     return intersects[0];
   }
   raycastMouseOnSurface(e) {
-    if(!e) return false;
+    if (!e) return false;
     const { x, y } = e;
     let { mouseX, mouseY } = this.convMouseCord(x, y);
     var mouse = new THREE.Vector3(mouseX, mouseY, 0.99);
@@ -291,8 +363,8 @@ export default class ThreeViewHelper {
     const vec = new THREE.Vector2();
     const { width, height } = this.renderer.getSize(vec);
 
-    var mouseX = ((x) / width) * 2 - 1;
-    var mouseY = -((y) / height) * 2 + 1;
+    var mouseX = (x / width) * 2 - 1;
+    var mouseY = -(y / height) * 2 + 1;
     return { mouseX, mouseY };
   }
   getCameraConfig() {
@@ -302,7 +374,7 @@ export default class ThreeViewHelper {
     return { position, rotation, target };
   }
   rotateCarpet(rotationInDegrees, axis) {
-    if (!this.carpetMesh) return
+    if (!this.carpetMesh) return;
     this.carpetMesh.rotation[axis] += (rotationInDegrees * Math.PI) / 180;
     this.render();
   }
@@ -329,39 +401,37 @@ export default class ThreeViewHelper {
     this.render();
   }
 
-
   toScreenXY(position, camera) {
     var pos = position.clone();
     let projScreenMat = new THREE.Matrix4();
     projScreenMat.multiply(camera.projectionMatrix, camera.matrixWorldInverse);
     projScreenMat.multiplyVector3(pos);
-    const { offsetX, offsetY } = this.getRendererOffset()
+    const { offsetX, offsetY } = this.getRendererOffset();
     return {
-      x: (pos.x + 1) * this.w / 2 + offsetX,
-      y: (- pos.y + 1) * this.h / 2 + offsetY
+      x: ((pos.x + 1) * this.w) / 2 + offsetX,
+      y: ((-pos.y + 1) * this.h) / 2 + offsetY,
     };
-
   }
 
   getCarpetPositions() {
     this.carpetMesh.geometry.computeBoundingBox();
     let box = this.carpetMesh.geometry.boundingBox;
-    const widthheight = box.max.sub(box.min)
+    const widthheight = box.max.sub(box.min);
 
-    const plane = new THREE.PlaneGeometry(widthheight.x, widthheight.y)
-    const mat = new THREE.MeshBasicMaterial({ color: 0xff0000 })
-    const m = new THREE.Mesh(plane, mat)
-    m.scale.copy(this.carpetMesh.scale)
-    m.position.copy(this.carpetMesh.position)
-    m.rotation.copy(this.carpetMesh.rotation)
-    const a = []
-    plane.vertices.forEach(vertex => {
-      const v = vertex.clone()
+    const plane = new THREE.PlaneGeometry(widthheight.x, widthheight.y);
+    const mat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const m = new THREE.Mesh(plane, mat);
+    m.scale.copy(this.carpetMesh.scale);
+    m.position.copy(this.carpetMesh.position);
+    m.rotation.copy(this.carpetMesh.rotation);
+    const a = [];
+    plane.vertices.forEach((vertex) => {
+      const v = vertex.clone();
       v.applyMatrix4(this.carpetMesh.matrixWorld);
-      a.push(v)
-    })
-    const b = a.map(vertex => createVector(vertex, this.camera, this.w, this.h))
-    return [b[0], b[1], b[3], b[2]]
+      a.push(v);
+    });
+    const b = a.map((vertex) => createVector(vertex, this.camera, this.w, this.h));
+    return [b[0], b[1], b[3], b[2]];
   }
   getCarpetArea() {
     const positions = this.getCarpetPositions();
@@ -369,10 +439,10 @@ export default class ThreeViewHelper {
   }
   getCarpetMask() {
     const originalBg = this.scene.background;
-    const object = this.scene.getObjectByName(this.surfaceName)
+    const object = this.scene.getObjectByName(this.surfaceName);
     const originalMat = object.material;
     // this.scene.background = new THREE.Color(0xffffff);
-    const material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
+    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
     object.material = material;
     object.material.needsUpdate = true;
     this.render();
@@ -380,7 +450,7 @@ export default class ThreeViewHelper {
     this.scene.background = originalBg;
     object.material = originalMat;
     this.render();
-    return dataurl
+    return dataurl;
   }
   toggleOrbitControls(enable) {
     this.orbit.enabled = enable;
@@ -419,13 +489,12 @@ export default class ThreeViewHelper {
     if (this.object && this.object.material.map) {
       this.object.material.map.needsUpdate = true;
       // this.object.material.normalMap.needsUpdate = true;
-
     }
-    this.render()
+    this.render();
   }
   resizeRenderer({ width, height }) {
     this.w = width;
-    this.h = height
+    this.h = height;
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
 
@@ -433,23 +502,23 @@ export default class ThreeViewHelper {
   }
   getObjectConfig() {
     if (this.objectLoaded) {
-      return null
+      return null;
     } else {
-      return this.carpetMesh
+      return this.carpetMesh;
     }
   }
   calculateCarpetSize() {
     const carpetSize = new THREE.Vector3();
     var box = new THREE.Box3();
     box.setFromObject(this.carpetMesh);
-    box.getSize(carpetSize)
+    box.getSize(carpetSize);
     // this.carpetMesh.geometry.computeBoundingBox();
     // this.carpetMesh.geometry.boundingBox.getSize(carpetSize);
     return carpetSize;
   }
   distbetween2Vertices(vertex1, vertex2, axis) {
     const { camera, renderer } = this;
-    const vec = new THREE.Vector2()
+    const vec = new THREE.Vector2();
     renderer.getSize(vec);
     const { x: width, y: height } = vec;
     const v1 = createVector(vertex1, camera, width, height);
@@ -465,19 +534,13 @@ export default class ThreeViewHelper {
     const carpetCenter = this.carpetMesh.position.clone();
 
     const vertex1 = carpetCenter.clone();
-    const vertex2 = new THREE.Vector3(
-      carpetCenter.x,
-      carpetCenter.y,
-      carpetCenter.z + carpetRadius)
+    const vertex2 = new THREE.Vector3(carpetCenter.x, carpetCenter.y, carpetCenter.z + carpetRadius);
 
     const dist1 = this.distbetween2Vertices(vertex1, vertex2);
     const radYY = dist1.yDist;
     const radYX = dist1.xDist;
 
-    const vertex3 = new THREE.Vector3(
-      carpetCenter.x + carpetRadius,
-      carpetCenter.y,
-      carpetCenter.z);
+    const vertex3 = new THREE.Vector3(carpetCenter.x + carpetRadius, carpetCenter.y, carpetCenter.z);
     //TODO:this could be point of failure
     const vertex4 = carpetCenter.clone();
     const dist2 = this.distbetween2Vertices(vertex3, vertex4);
@@ -495,7 +558,7 @@ export default class ThreeViewHelper {
       radY = radYX;
     }
     const canvasCenter = createVector(carpetCenter, this.camera, this.w, this.h);
-    return { radX, radY, canvasCenter }
+    return { radX, radY, canvasCenter };
   }
   // downloadImageData() {
   //   const dataurl = this.renderer.domElement.toBlob(blob => {
@@ -507,7 +570,6 @@ export default class ThreeViewHelper {
   //     link.click()
   //     document.body.removeChild(link); //remove the link when done
   //   })
-
 
   // }
 }
@@ -538,14 +600,14 @@ const renderer = (canvas, config = {}) => {
     preserveDrawingBuffer = true,
     alpha = true,
     antialias = false,
-    resolution = 1
+    resolution = 1,
   } = config;
   //console.log(width, height);
   const renderer = new THREE.WebGLRenderer({
     canvas,
     preserveDrawingBuffer,
     alpha,
-    antialias
+    antialias,
   });
   // renderer.autoClear = false;
   // renderer.setClearColor(0x000000);
@@ -574,11 +636,6 @@ const addOrbitControl = function (renderer, scene, camera, config = {}) {
 };
 export const loadFbx = (url) => {
   return new Promise((resolve, reject) => {
-    new FBXLoader().load(
-      url,
-      resolve,
-      undefined,
-      reject
-    );
+    new FBXLoader().load(url, resolve, undefined, reject);
   });
-}
+};

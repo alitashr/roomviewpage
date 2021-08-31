@@ -245,14 +245,14 @@ export default class RoomViewHelper {
       baseUrl: this.baseUrl,
       roomType
     });
-   // return this.threeView.setupSceneObjects({ fbxUrl: "https://v3.explorug.com/rug.fbx" });
    switch (roomType) {
     case "illustration":
-      return this.threeView.setup3dObject({ fbxUrl: makeUrl(this.baseUrl, sceneConfig.modelUrl) });
+      return this.threeView.setupSceneObjects({ fbxUrl: makeUrl(this.baseUrl, sceneConfig.modelUrl) });
     default:
-      return this.threeView.setupCarpet({ fbxUrl: "https://v3.explorug.com/rug.fbx" });
-
+      return this.threeView.setupSceneObjects({ fbxUrl: "https://v3.explorug.com/v3assets/rug.fbx" });
   }
+  //return this.threeView.setupSceneObjects({ fbxUrl: "https://v3.explorug.com/rug.fbx" });
+  
   }
   renderImage({image, physicalWidth, physicalHeight}){
     const { width, height } = image;

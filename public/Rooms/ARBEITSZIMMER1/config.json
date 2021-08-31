@@ -10,7 +10,7 @@
   "dims": { "width": 1920, "height": 1080 },
   "scene1": {
     "overwriteFbx": true,
-    "modelUrl": "1sqm 1-for explorug.FBX",
+    "modelUrl": "atRoom.FBX",
     "objects": ["surface1"],
     "adjustObjects": [],
     "hideObjects": [],

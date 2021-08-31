@@ -39,7 +39,7 @@ const ColorSelectionBox = props => {
   return (
     <div className={classNames("color-selection-box")}>
     {
-      collections.length>1 && 
+      collections && collections.length>1 && 
       <ColorPaletteDropdown collections={collections} collectionIndex={collectionIndex}></ColorPaletteDropdown>}
     {
       colorCollection && (
