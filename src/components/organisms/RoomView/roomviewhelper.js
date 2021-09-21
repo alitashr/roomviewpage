@@ -1,4 +1,10 @@
-import { clearCanvas, createCanvas, cropStitchCanvas, downloadImageData, getCroppedSize } from "../../../utils/canvasUtils";
+import {
+  clearCanvas,
+  createCanvas,
+  cropStitchCanvas,
+  downloadImageData,
+  getCroppedSize,
+} from "../../../utils/canvasUtils";
 import { convertArrintoDeg, convertUnit } from "../../../utils/converter";
 import { makeUrl, readImage } from "../../../utils/fileUtils";
 import { resizeKeepingAspect } from "../../../utils/utils";
@@ -9,7 +15,7 @@ const tileCanvas = new TileCanvas();
 
 function createName() {
   let res = "";
-  Array.from(arguments).forEach(argument => {
+  Array.from(arguments).forEach((argument) => {
     if (argument) {
       res = `${res}${argument}.`;
     }
@@ -17,7 +23,7 @@ function createName() {
   return res;
 }
 
-const rgbFromHex = hex => {
+const rgbFromHex = (hex) => {
   let rgb = new Array(3);
   rgb[0] = parseInt(hex.substring(1, 3), 16);
   rgb[1] = parseInt(hex.substring(3, 5), 16);
@@ -27,7 +33,7 @@ const rgbFromHex = hex => {
 
 const patchRgb = [45, 24, 18];
 export default class RoomViewHelper {
-  constructor () {
+  constructor() {
     this.config = {};
     this.baseUrl = null;
     this.dimension = { width: null, height: null };
@@ -46,9 +52,9 @@ export default class RoomViewHelper {
 
     this.zoom = 2;
     this.currentActiveColors = [];
-    this.flags = {}
+    this.flags = {};
   }
-  initFlags(flags){
+  initFlags(flags) {
     this.flags = flags;
   }
 
@@ -61,6 +67,7 @@ export default class RoomViewHelper {
     this.inputCanvas = options.inputCanvas;
     this.transitionCanvas = options.transitionCanvas;
     this.floatingOptionsContainer = options.floatingOptionsContainer;
+    this.bgVideo = options.bgVideo;
   }
   clearAllCanvases() {
     const { width, height } = this.dimension;
@@ -77,7 +84,7 @@ export default class RoomViewHelper {
     const illustrationDims = this.config.dims;
     const containerDims = {
       width: this.container.clientWidth,
-      height: this.container.clientHeight
+      height: this.container.clientHeight,
     };
     this.currentActiveColors = [];
     this.selectedColorCode = null;
@@ -86,7 +93,8 @@ export default class RoomViewHelper {
 
     this.dimension = {
       width: sizeFromConfig && illustrationDims.width ? illustrationDims.width : window.screen.width * this.resolution,
-      height: sizeFromConfig && illustrationDims.height ? illustrationDims.height : window.screen.height * this.resolution
+      height:
+        sizeFromConfig && illustrationDims.height ? illustrationDims.height : window.screen.height * this.resolution,
     };
     this.resolution = this.dimension.width / this.dimensionPixels.width;
     this.inputCanvas.width = this.dimensionPixels.width;
@@ -95,12 +103,16 @@ export default class RoomViewHelper {
       this.floatingOptionsContainer.style.width = `${this.dimensionPixels.width}px`;
       this.floatingOptionsContainer.style.height = `${this.dimensionPixels.height}px`;
     }
+    if (this.bgVideo) {
+      this.bgVideo.style.width = `${this.dimensionPixels.width}px`;
+      this.bgVideo.style.height = `${this.dimensionPixels.height}px`;
+    }
     // setCanvasDimensions(this.inputCanvas, this.dimension, this.dimensionPixels)
     clearCanvas(this.bgCanvas, this.dimension.width, this.dimension.height);
 
     const x = {
       shot: this.config.shots[0],
-      light: this.config.lights ? this.config.lights[0] : null
+      light: this.config.lights ? this.config.lights[0] : null,
     };
     const bgUrl = `${createName(x.shot, x.light)}bg.jpg`;
     const bgPatchUrl = `${createName(x.shot, x.light)}pch.png`;
@@ -110,6 +122,7 @@ export default class RoomViewHelper {
     const shadowUrl = `${createName(x.shot, x.light)}sh.jpg`;
     const highlightUrl = `${createName(x.shot, x.light)}hl.jpg`;
     const glowUrl = `${createName(x.shot, x.light)}gl.jpg`;
+    const bgVideoUrl = config.backgroundVideo;
     const promises = [];
     this.bgImage = null;
     this.maskImage = null;
@@ -120,27 +133,40 @@ export default class RoomViewHelper {
     this.glowImage = null;
     if (!this.files.includes(bgUrl)) promises.push(Promise.reject("no background image"));
     else {
-      promises.push(readImage(makeUrl(baseUrl, bgUrl)).then(img => (this.bgImage = img)));
+      promises.push(readImage(makeUrl(baseUrl, bgUrl)).then((img) => (this.bgImage = img)));
       if (this.files.includes(bgPatchUrl))
-        promises.push(readImage(makeUrl(baseUrl, bgPatchUrl)).then(img => (this.patchImage = img)));
+        promises.push(readImage(makeUrl(baseUrl, bgPatchUrl)).then((img) => (this.patchImage = img)));
       if (this.files.includes(bgPatchShadowUrl))
-        promises.push(
-          readImage(makeUrl(baseUrl, bgPatchShadowUrl)).then(img => (this.patchShadow = img))
-        );
+        promises.push(readImage(makeUrl(baseUrl, bgPatchShadowUrl)).then((img) => (this.patchShadow = img)));
       if (this.files.includes(bgPatchGreyUrl))
-        promises.push(
-          readImage(makeUrl(baseUrl, bgPatchGreyUrl)).then(img => (this.patchGreyImage = img))
-        );
+        promises.push(readImage(makeUrl(baseUrl, bgPatchGreyUrl)).then((img) => (this.patchGreyImage = img)));
       if (this.files.includes(maskUrl))
-        promises.push(readImage(makeUrl(baseUrl, maskUrl)).then(img => (this.maskImage = img)));
+        promises.push(readImage(makeUrl(baseUrl, maskUrl)).then((img) => (this.maskImage = img)));
       if (this.files.includes(shadowUrl))
-        promises.push(readImage(makeUrl(baseUrl, shadowUrl)).then(img => (this.shadowImage = img)));
+        promises.push(readImage(makeUrl(baseUrl, shadowUrl)).then((img) => (this.shadowImage = img)));
       if (this.files.includes(highlightUrl))
-        promises.push(
-          readImage(makeUrl(baseUrl, highlightUrl)).then(img => (this.highlightImage = img))
-        );
+        promises.push(readImage(makeUrl(baseUrl, highlightUrl)).then((img) => (this.highlightImage = img)));
       if (this.files.includes(glowUrl))
-        promises.push(readImage(makeUrl(baseUrl, glowUrl)).then(img => (this.glowImage = img)));
+        promises.push(readImage(makeUrl(baseUrl, glowUrl)).then((img) => (this.glowImage = img)));
+        console.log("initConfig -> this.bgVideo", this.bgVideo)
+      if (this.bgVideo) {
+        if (this.files.includes(bgVideoUrl)) {
+          console.log("initConfig -> bgVideoUrl", bgVideoUrl)
+          const mask = makeUrl(baseUrl, maskUrl);
+          this.bgVideo.src = makeUrl(baseUrl, bgVideoUrl);
+          // const currentStyle = this.bgVideo.getAttribute("style");
+          // window.bgVideo = this.bgVideo;
+          // console.log("initConfig -> currentStyle", currentStyle)
+          this.bgVideo.setAttribute("style", `-webkit-mask-image: url("${mask}"); mask-image: url("${mask}");`);
+        } else {
+          this.bgVideo.src = "";
+          
+          // const currentStyle = this.bgVideo.getAttribute("style")
+          // console.log("initConfig -> currentStyle", currentStyle);
+
+          this.bgVideo.setAttribute("style", `mask-image:none`);
+        }
+      }
     }
     return promises;
   }
@@ -178,7 +204,8 @@ export default class RoomViewHelper {
 
       if (!this.selectedColorCode) this.selectedColorCode = patchRgb;
       //console.log(patchData.data)
-      let counter = 0, ifcounter = 0;
+      let counter = 0,
+        ifcounter = 0;
       let t1 = performance.now();
       for (let i = 0; i < patchData.data.length; i += 4) {
         counter++;
@@ -200,18 +227,16 @@ export default class RoomViewHelper {
       }
       let t2 = performance.now();
       //console.log(t2 - t1, " ms ", counter, " counter ", ifcounter);
-      const sel = this.currentActiveColors.findIndex(
-        item => item.annotationColor === this.selectedColorCode
-      );
+      const sel = this.currentActiveColors.findIndex((item) => item.annotationColor === this.selectedColorCode);
       if (!sel || sel === -1) {
         this.currentActiveColors.push({
           annotationColor: this.selectedColorCode,
-          dominantColorHex
+          dominantColorHex,
         });
       } else
         this.currentActiveColors[sel] = {
           annotationColor: this.selectedColorCode,
-          dominantColorHex
+          dominantColorHex,
         };
 
       patchCtx.putImageData(patchData, 0, 0);
@@ -249,11 +274,11 @@ export default class RoomViewHelper {
       dims: this.dimensionPixels,
       resolution: this.resolution,
       baseUrl: this.baseUrl,
-      roomType
+      roomType,
     });
     return this.threeView.setupSceneObjects({ carpetRotation });
   }
- 
+
   // renderDesignFromCustomUrl({ customUrl, physicalWidth, physicalHeight, unit='cm' }) {
   //   return new Promise((resolve, reject) => {
   //     readImage(customUrl)
@@ -298,7 +323,7 @@ export default class RoomViewHelper {
   //       });
   //   });
   // }
-  renderImage({image, physicalWidth, physicalHeight, unit='cm' }){
+  renderImage({ image, physicalWidth, physicalHeight, unit = "cm" }) {
     const { width, height } = image;
     const designCanvas = createCanvas(width, height);
     const ctx = designCanvas.getContext("2d");
@@ -311,11 +336,7 @@ export default class RoomViewHelper {
     let PhysicalWidth, PhysicalHeight;
     if (!physicalWidth || !physicalHeight) {
       const maxDims = { width: 1200, height: 1500 };
-      const { width: newWidth, height: newHeight } = resizeKeepingAspect(
-        { width, height },
-        maxDims,
-        "fit_inside"
-      );
+      const { width: newWidth, height: newHeight } = resizeKeepingAspect({ width, height }, maxDims, "fit_inside");
       PhysicalWidth = convertUnit("in", "ft", newWidth / 10);
       PhysicalHeight = convertUnit("in", "ft", newHeight / 10);
     } else {
@@ -327,21 +348,21 @@ export default class RoomViewHelper {
       Height: height,
       PhysicalWidth,
       PhysicalHeight,
-      Unit: "ft"
+      Unit: "ft",
     };
 
     this.threeView.setCarpetTexture({ designDetails, designCanvas, normapCanvas });
     this.updateGizmo();
   }
 
-  renderDesignFromCustomUrl({ customUrl, physicalWidth, physicalHeight, unit='cm'  }) {
+  renderDesignFromCustomUrl({ customUrl, physicalWidth, physicalHeight, unit = "cm" }) {
     return new Promise((resolve, reject) => {
       readImage(customUrl)
-        .then(image => {
-          this.renderImage ({image, physicalWidth, physicalHeight, unit})
+        .then((image) => {
+          this.renderImage({ image, physicalWidth, physicalHeight, unit });
           resolve();
         })
-        .catch(err => {
+        .catch((err) => {
           reject(err);
         });
     });
@@ -355,9 +376,7 @@ export default class RoomViewHelper {
     const { designScale, canvasSize, renderBounds, offset } = this.config[this.config.scenes[0]];
     if (designScale) this.zoom = designScale;
     else this.zoom = 2;
-    const isDimsOrig =
-      designDimsOrig.Width === designDetails.Width &&
-      designDimsOrig.Height === designDetails.Height;
+    const isDimsOrig = designDimsOrig.Width === designDetails.Width && designDimsOrig.Height === designDetails.Height;
 
     let tileTransparency;
     try {
@@ -378,14 +397,14 @@ export default class RoomViewHelper {
       designDetails: desDetails,
       canvasSize,
       renderBounds,
-      offset
+      offset,
     });
     switch (roomType) {
       case "illustration":
         return new Promise((resolve, reject) => {
           this.threeView.setObjectTexture({
             designDetails,
-            designCanvas: tileCanvas.canvas
+            designCanvas: tileCanvas.canvas,
           });
           // this.threeView.setObjectVisibility(false)
           let drawNormap = tileTransparency.length;
@@ -399,7 +418,7 @@ export default class RoomViewHelper {
               designDetails,
               hash,
               drawNormap,
-              tileTransparency
+              tileTransparency,
             },
             () => {
               // this.threeView.updateMap()
@@ -422,14 +441,13 @@ export default class RoomViewHelper {
           this.threeView.setCarpetTexture({
             designDetails: desDetails,
             designCanvas: this.designCanvasMod,
-            normapCanvas: this.normalCanvasMod
+            normapCanvas: this.normalCanvasMod,
           });
           this.threeView.setCarpetVisibility(false);
           const { DesignColors } = designDetails;
           let drawNormap =
-            !DesignColors.every(
-              color => color.PileHeight === DesignColors[0].PileHeight && !color.Carving
-            ) || tileTransparency.length;
+            !DesignColors.every((color) => color.PileHeight === DesignColors[0].PileHeight && !color.Carving) ||
+            tileTransparency.length;
           if (!this.flags.applyNormalMapInJPEG && window.InterfaceElements.IsJpeg) {
             drawNormap = false;
           }
@@ -439,11 +457,11 @@ export default class RoomViewHelper {
             designDetails: desDetails,
             hash,
             tileTransparency,
-            drawNormap
+            drawNormap,
           };
           tileCanvas.drawCanvasTiles(
             options,
-            () => { }, // function to call after each tile render
+            () => {}, // function to call after each tile render
             () => {
               // function to call after render is complete
               if (!isDimsOrig && this.flags.ordersheet.repeatRugInArea) {
@@ -454,17 +472,12 @@ export default class RoomViewHelper {
                     this.threeView.setCarpetVisibility(true);
                     this.updateGizmo();
                     resolve();
-                  }
+                  },
                 });
-              }
-              else {
+              } else {
                 const cropPadding = 100;
                 if (!isDimsOrig) {
-                  const { width, height } = getCroppedSize(
-                    designDimsOrig,
-                    designDetails,
-                    cropPadding
-                  );
+                  const { width, height } = getCroppedSize(designDimsOrig, designDetails, cropPadding);
                   this.designCanvasMod.width = width;
                   this.designCanvasMod.height = height;
                   this.normalCanvasMod.width = width;
@@ -494,7 +507,7 @@ export default class RoomViewHelper {
         resolve();
         return;
       }
-      readImage(path).then(floorImage => {
+      readImage(path).then((floorImage) => {
         if (!this.floorCanvas) this.floorCanvas = createCanvas(floorImage.width, floorImage.height);
         else {
           this.floorCanvas.width = floorImage.width;
@@ -557,9 +570,7 @@ export default class RoomViewHelper {
       let colorIndex;
       if (updateDesignTiles) colorIndex = updateDesignTiles.colorIndex;
       if (updateNormapTiles) colorIndex = updateNormapTiles.colorIndex;
-      const isDimsOrig =
-        designDimsOrig.Width === designDetails.Width &&
-        designDimsOrig.Height === designDetails.Height;
+      const isDimsOrig = designDimsOrig.Width === designDetails.Width && designDimsOrig.Height === designDetails.Height;
 
       if (this.designDetails.DesignColors === designDetails.DesignColors) {
         this.designDetails = designDetails;
@@ -574,17 +585,12 @@ export default class RoomViewHelper {
               this.threeView.updateMap();
               resolve();
               return;
-            }
+            },
           });
-        }
-        else {
+        } else {
           if (!isDimsOrig) {
             const cropPadding = 100;
-            const { width, height, offsetX, offsetY } = getCroppedSize(
-              designDimsOrig,
-              designDetails,
-              cropPadding
-            );
+            const { width, height, offsetX, offsetY } = getCroppedSize(designDimsOrig, designDetails, cropPadding);
             startX = offsetX;
             startY = offsetY;
             this.designCanvasMod.width = width;
@@ -605,7 +611,6 @@ export default class RoomViewHelper {
           resolve();
           return;
         }
-
       }
       this.designDetails = designDetails;
 
@@ -625,7 +630,7 @@ export default class RoomViewHelper {
         designDetails,
         designPath: this.designPath,
         hash,
-        tileTransparency
+        tileTransparency,
       };
       if (!updateNormapTiles) {
         tileCanvas.designTilesUpdated = true;
@@ -635,8 +640,7 @@ export default class RoomViewHelper {
             this.threeView.updateMap();
           },
           () => {
-            if (this.designCanvasMod)
-              this.designCanvasMod.getContext("2d").drawImage(tileCanvas.canvas, 0, 0);
+            if (this.designCanvasMod) this.designCanvasMod.getContext("2d").drawImage(tileCanvas.canvas, 0, 0);
             this.threeView.updateMap();
             setTimeout(() => {
               resolve();
@@ -651,8 +655,7 @@ export default class RoomViewHelper {
             this.threeView.updateMap();
           },
           () => {
-            if (this.normalCanvasMod)
-              this.normalCanvasMod.getContext("2d").drawImage(tileCanvas.canvasNorm, 0, 0);
+            if (this.normalCanvasMod) this.normalCanvasMod.getContext("2d").drawImage(tileCanvas.canvasNorm, 0, 0);
             this.threeView.updateMap();
             setTimeout(() => {
               resolve();
@@ -673,7 +676,8 @@ export default class RoomViewHelper {
 
     const img = new Image();
     const img1 = new Image();
-    let imgloaded = false, img1loaded = false;
+    let imgloaded = false,
+      img1loaded = false;
 
     const repeatImg = (canvas, img, width, height) => {
       var ctx = canvas.getContext("2d");
@@ -681,14 +685,14 @@ export default class RoomViewHelper {
       ctx.rect(0, 0, width, height);
       ctx.fillStyle = pat;
       ctx.fill();
-    }
+    };
 
     const finish = () => {
       if (imgloaded && img1loaded) {
         onComplete();
         return;
       }
-    }
+    };
 
     img.onload = () => {
       repeatImg(this.designCanvasMod, img, width, height);
@@ -803,7 +807,7 @@ export default class RoomViewHelper {
     }
   }
   mouseDownTouchMove(e) {
-    if(!e) return;
+    if (!e) return;
     const difference = e.x - this.prev.x;
     this.moved = difference > 10;
     if (!this.intersectsGizmo) {
@@ -819,7 +823,7 @@ export default class RoomViewHelper {
     let showColorSelectionBox = null;
     if (!this.moved && this.annotationCanvas) {
       const imgData = this.annotationCanvas.getContext("2d").getImageData(e.x, e.y, 1, 1);
-      if (!imgData.data.every(data => data === 255 || data === 0))
+      if (!imgData.data.every((data) => data === 255 || data === 0))
         showColorSelectionBox = this.selectedColorCode = imgData.data.slice(0, 3);
     }
     let rotation = null;
@@ -855,7 +859,7 @@ export default class RoomViewHelper {
     }
     return ingizmo;
   }
-  clearGizmo() { }
+  clearGizmo() {}
   updateGizmo() {
     const { roomType } = this.config;
     if (roomType === "illustration") return;
@@ -870,7 +874,7 @@ export default class RoomViewHelper {
       r: 250,
       g: 250,
       b: 250,
-      a: 0.8
+      a: 0.8,
     };
     const colorStr = "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", " + rgb.a + ")";
     var radiusX;
@@ -904,7 +908,7 @@ export default class RoomViewHelper {
     if (!this.config.dims || !this.threeView.renderer) return;
     const containerDims = {
       width: this.container.clientWidth,
-      height: this.container.clientHeight
+      height: this.container.clientHeight,
     };
     this.dimensionPixels = resizeKeepingAspect(this.config.dims, containerDims, "fit_inside");
     setCanvasDimensionsStyle(this.bgCanvas, this.dimensionPixels);
@@ -916,6 +920,10 @@ export default class RoomViewHelper {
     if (this.floatingOptionsContainer) {
       this.floatingOptionsContainer.style.width = `${this.dimensionPixels.width}px`;
       this.floatingOptionsContainer.style.height = `${this.dimensionPixels.height}px`;
+    }
+    if (this.bgVideo) {
+      this.bgVideo.style.width = `${this.dimensionPixels.width}px`;
+      this.bgVideo.style.height = `${this.dimensionPixels.height}px`;
     }
     this.updateGizmo();
   }
@@ -968,5 +976,4 @@ const setCanvasDimensions = (canvas, dimension, dimensionPixels) => {
   canvas.style.width = `${widthPix}px`;
   canvas.style.height = `${heightPix}px`;
 };
-const normalizeDirNames = files =>
-  files.map(item => (item.charAt(0) === "/" ? item.substring(1) : item));
+const normalizeDirNames = (files) => files.map((item) => (item.charAt(0) === "/" ? item.substring(1) : item));

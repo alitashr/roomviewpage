@@ -1,7 +1,7 @@
 import { Button } from "antd";
 import classNames from "classnames";
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getFloor } from "../../../api/appProvider";
 import { assetsFolder, defaultRoomdata, initialDesignProps } from "../../../constants/constants";
 import { getDesignData, getRoomData } from "../../../MiddlewareFunc/getInfo";
@@ -15,18 +15,20 @@ import RoomView from "../../organisms/RoomView";
 
 const RoomViewPage = (props) => {
   const { showButton = true, className = "", onButtonClick } = props;
-  const [roomData, setRoomData] = useState();
-  const [designImageProps, setDesignImageProps] = useState(null);
+  //const [roomData, setRoomData] = useState();
+  //const [designImageProps, setDesignImageProps] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showIframe, setShowIframe] = useState(false);
   let hasOverlayVideo = sessionStorage.getItem("hasOverlayVideo") || false;
   const dispatch = useDispatch();
+  const roomData = useSelector((state) => state.room);
   
   useEffect(() => {
     window.flags = {};
     window.InterfaceElements = {};
-    getFloor().then(floors=>{
-      dispatch(setFloorOptions(floors))
+    
+    getFloor().then((floors) => {
+      dispatch(setFloorOptions(floors));
     });
 
     // let roomPath = sessionStorage.getItem("initview") || "";
@@ -47,7 +49,7 @@ const RoomViewPage = (props) => {
     //   });
     // });
   }, []);
-  
+
   const getVideoPlayerClassName = (roomDir) => {
     const roomNameParts = roomDir.split("/");
     const roomName = roomNameParts.pop();
@@ -83,19 +85,20 @@ const RoomViewPage = (props) => {
   };
   return (
     <div className={classNames("at-roomview-container", className)}>
-     
-        <>
-          {hasOverlayVideo && (
-            <VideoPlayer
-              className={getVideoPlayerClassName(roomData.Dir)}
-              src={getVideoPlayerSrc(roomData.Dir)}
-            ></VideoPlayer>
-          )}
-           <RoomContainer onRoomRendered={()=>{
-         setIsLoading(false);
-      }}></RoomContainer>
+      <>
+        {hasOverlayVideo && roomData &&  (
+          <VideoPlayer
+            className={getVideoPlayerClassName(roomData.Dir)}
+            src={getVideoPlayerSrc(roomData.Dir)}
+          ></VideoPlayer>
+        )}
+        <RoomContainer
+          onRoomRendered={() => {
+            setIsLoading(false);
+          }}
+        ></RoomContainer>
 
-          {/* <RoomView
+        {/* <RoomView
             className={classNames({ "room-view-overlay": hasOverlayVideo })}
             onRendered={() => {
               setIsLoading(false);
@@ -107,8 +110,8 @@ const RoomViewPage = (props) => {
             roomData={roomData}
             designImageProps={designImageProps}
           /> */}
-        </>
-      
+      </>
+
       {isLoading && (
         <div className="spinner-container">
           <AtSpinnerOverlay show={isLoading}></AtSpinnerOverlay>
@@ -121,7 +124,7 @@ const RoomViewPage = (props) => {
       )}
       {showButton && (
         <ExplorugIframePopup
-          className={classNames({'hidden': !showIframe})}
+          className={classNames({ hidden: !showIframe })}
           showExplorugPopup={showIframe}
           explorugPopUpUrl={window.urlToOpen}
           onClose={() => setShowIframe(false)}

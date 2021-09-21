@@ -10,6 +10,10 @@ import { getRenderedDesign } from "../../../api/appProvider";
 import { getDominantColor } from "../../../utils/colorUtils";
 
 let roomViewHelper = new RoomViewHelper();
+let designRendered = false;
+let designRendering = false;
+
+
 const RoomView = (props) => {
   const { roomData, designImageProps, onRendered, onRoomLoaded, className = "" } = props;
   const { Name: roomName, Dir: dir, Files, baseUrl, config, activeFloor, floorOptions } = roomData;
@@ -22,6 +26,7 @@ const RoomView = (props) => {
   const shadowCanvasRef = useRef(null);
   const inputCanvasRef = useRef(null);
   const transitionCanvasRef = useRef();
+  const videoRef = useRef();
 
   const prevRoomDetails = usePrevious(roomData);
   const prevDesignImagePath = usePrevious(designImagePath);
@@ -48,7 +53,8 @@ const RoomView = (props) => {
       shadowCanvas: shadowCanvasRef.current,
       container: containerRef.current,
       inputCanvas: inputCanvasRef.current,
-      transitionCanvas: transitionCanvasRef.current
+      transitionCanvas: transitionCanvasRef.current,
+      bgVideo: videoRef.current
     };
     roomViewHelper.initCanvas(canvasConfig);
   });
@@ -65,23 +71,39 @@ const RoomView = (props) => {
     };
     updateFloor();
   }, [activeFloor]);
+  const renderFloorInRoom = (activeFloor) => {
+    if (!floorOptions) return Promise.resolve();
+    const floor = activeFloor && activeFloor.path ? activeFloor : floorOptions.activeFloor;
+    return roomViewHelper.renderFloor(floor);
+  };
+   
+  const renderDesign= async()=>{
+    if (typeof designImagePath === "string") {
+      await roomViewHelper.renderDesignFromCustomUrl({
+        customUrl: designImagePath,
+      });
+      await renderFloorInRoom(activeFloor);
+    } else {
+      await roomViewHelper.renderFromJpg({ designImage: designImagePath });
+    }
+  }
+
 
   useEffect(() => {
     let la = true;
-    const renderFloorInRoom = (activeFloor) => {
-      if (!floorOptions) return Promise.resolve();
-      const floor = activeFloor && activeFloor.path ? activeFloor : floorOptions.activeFloor;
-      return roomViewHelper.renderFloor(floor);
-    };
+   
 
     const loadRoom = async () => {
       try {
+        console.log('load room')
         //if room has been changed
         if (prevRoomDetails !== roomData) {
           roomViewHelper.makeTransitionCanvas();
           if (!Files.length) return;
+          console.log("loadRoom -> Files", Files)
+          
           const files = Files.map((file) => (file[0] === "/" ? file : "/" + file));
-          //console.log("loadRoom -> baseUrl", baseUrl)
+          console.log("loadRoom -> baseUrl", files)
           
           await Promise.all(roomViewHelper.initConfig({ baseUrl, config, files }));
           if (!la) return;
@@ -94,6 +116,11 @@ const RoomView = (props) => {
           if (prevDesignImagePath === designImagePath) {
             await roomViewHelper.updatethreeCanvas();
             if (!la) return;
+            if (
+              (!designRendering && !designRendered)) {
+                designRendering = true;
+                await renderDesign()
+            } 
             roomViewHelper.updateShadow();
             await renderFloorInRoom(activeFloor);
             if (!la) return;
@@ -103,16 +130,9 @@ const RoomView = (props) => {
         }
         if (prevDesignImagePath !== designImagePath) {
           await roomViewHelper.updatethreeCanvas();
-          if (typeof designImagePath === "string") {
-            await roomViewHelper.renderDesignFromCustomUrl({
-              customUrl: designImagePath,
-            });
-            await renderFloorInRoom(activeFloor);
-            onRendered();
-          } else {
-            await roomViewHelper.renderFromJpg({ designImage: designImagePath });
-            onRendered();
-          }
+        await renderDesign();
+          onRendered();
+          
           roomViewHelper.updateShadow();
         } 
         else if (prevDesignDetails !== designDetails) {
@@ -121,9 +141,12 @@ const RoomView = (props) => {
             roomViewHelper.updateBackground({ dominantColorHex });
             roomViewHelper.updateMask();
           }
+          designRendered = false;
+          designRendering = false;
           //await setRoomTileDetails();
           await roomViewHelper.updatethreeCanvas();
           if (!la) return;
+           designRendering = true
           const renderedDesignImage = await getRenderedDesign({
             designDetails: designDetails,
             fullpath,
@@ -133,6 +156,8 @@ const RoomView = (props) => {
           roomViewHelper.renderImage({ image: renderedDesignImage });
           await renderFloorInRoom(activeFloor);
 
+          designRendered = true;
+            designRendering = false;
         } else {
           onRendered();
         }
@@ -150,7 +175,7 @@ const RoomView = (props) => {
       la = false;
     };
   }, [roomData, designImageProps]);
-
+ 
   const handleInputStart = (e) => {
     roomViewHelper.mouseDownTouchStart(e);
   };
@@ -164,11 +189,17 @@ const RoomView = (props) => {
   return (
     <React.Fragment>
       <div className={classNames("canvas-container", className)} ref={containerRef}>
-        <canvas className="canvas" ref={bgCanvasRef} style={{ zIndex: 1, pointerEvents: "none" }} />
-        <canvas className="canvas" ref={threeCanvasRef} style={{ zIndex: 2, pointerEvents: "all" }} />
-        <canvas className="canvas" ref={maskCanvasRef} style={{ zIndex: 3, pointerEvents: "none" }} />
-        <canvas className="canvas" ref={shadowCanvasRef} style={{ zIndex: 4, pointerEvents: "none" }} />
-        <canvas className="canvas" ref={transitionCanvasRef} style={{ zIndex: 5, pointerEvents: "none" }} />
+        <canvas className="canvas bgCanvas" ref={bgCanvasRef} style={{ zIndex: 1, pointerEvents: "none" }} />
+        <canvas className="canvas threeCanvas" ref={threeCanvasRef} style={{ zIndex: 2, pointerEvents: "all" }} />
+        <canvas className="canvas maskCanvas" ref={maskCanvasRef} style={{ zIndex: 3, pointerEvents: "none" }} />
+        
+      <video className={classNames("video", {show: config.backgroundVideo})} width="100%" height="100%" loop muted autoPlay playsInline
+        ref={videoRef}
+
+        //style={{ opacity: config.backgroundVideo? 1:0}}
+      />
+        <canvas className="canvas shadowCanvas" ref={shadowCanvasRef} style={{ zIndex: 4, pointerEvents: "none" }} />
+        <canvas className="canvas transitionCanvas" ref={transitionCanvasRef} style={{ zIndex: 5, pointerEvents: "none" }} />
         <InputCanvas
           zIndex={50}
           pointerEvent

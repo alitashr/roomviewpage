@@ -27,10 +27,15 @@ window.getUrlToOpen = () => {
     page = "beyonddreams2";
     initView = "Roman Passage.crf3d";
   }
-  if(room.toLowerCase() === OUTDOOR_PLUTITH.toLowerCase()){
+  else if(room.toLowerCase() === OUTDOOR_PLUTITH.toLowerCase()){
     page = "beyonddreams2";
     initView = "Outdoor Plutith.crf3d"
   }
+  else{
+    const roomName = room.split('/').pop();
+    initView = roomName.toLowerCase().indexOf('.crf3d')!==-1 ? roomName: roomName+'.crf3d'
+  }
+
 
   if (design.toLowerCase() === THORNURE) {
     page = "beyonddreams2";

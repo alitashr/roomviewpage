@@ -4,9 +4,11 @@ export const defaultRoomdata = {
   Dir: "Rooms/ARBEITSZIMMER1",
   Name: "ARBEITSZIMMER1",
   Files: [
+    "Config.json",
     "Shot_1.bg.jpg",
     "Shot_1.sh.jpg",
-    "Shot_1.m.png"
+    "Shot_1.m.png",
+    "backgroundVideo.mp4"
   ]
 };
 export const initialDesignProps = {

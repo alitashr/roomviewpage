@@ -52,11 +52,11 @@ export const fetchBasicRoomDetails = () => {
   return (dispatch) => {
     let roomPath = sessionStorage.getItem("initview") || "";
     const roomDataJSON = getRoomData(defaultRoomdata, roomPath);
-    console.log("return -> roomDataJSON", roomDataJSON)
     dispatch(setRoomBasicDetails(roomDataJSON));
     const baseUrl = assetsFolder + roomDataJSON.Dir;
     
     readJSON(`${baseUrl}/config.json`).then(async (config) => {
+      console.log("readJSON -> config", config)
       const name = roomDataJSON.Name || "";
       let roomData = { ...roomDataJSON, config, baseUrl };
 

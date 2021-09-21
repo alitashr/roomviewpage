@@ -10,6 +10,7 @@
 	"shots": [
 		"Shot_1"
 	],
+	"backgroundVideo": "backgroundVideo.mp4",
 	"scene1": {
 		"objects3d": [
 			"surface1"
