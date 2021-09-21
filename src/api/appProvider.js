@@ -103,7 +103,6 @@ const fetchApiKey = ({ username, password, encrypted = false }) => {
 
 export const autoLogin = () => {
   const { page, relogin } = getPageName();
-  console.log("autoLogin -> page", page);
   const username = sessionStorage.getItem("username") || "";
   const password = sessionStorage.getItem("password") || "";
 
@@ -213,6 +212,29 @@ export const fetchVisualizationTiles = ({ file, zoom, tiles, props, felt = 0 }) 
   if (props) data.append("props", JSON.stringify(props));
   return postHttpClient(data).then(processPath);
 };
+export const fetchDesignTiles = ({ file, zoom = 2, tiles, props, hash, felt = 0 }) => {
+  felt = felt ? 1 : 0;
+  let data = new FormData();
+  data.append("action", "designtiles");
+  data.append("key", getApiKey());
+  data.append("file", file);
+  data.append("felt", felt);
+  data.append("zoom", zoom);
+  data.append("tiles", JSON.stringify(tiles));
+  if (props) data.append("props", JSON.stringify(props));
+
+  return postWithRetry(data).then(processPath);
+};
+export const fetchPileTiles = ({ file, zoom = 2, tiles, props, hash }) => {
+  let data = new FormData();
+  data.append("action", "piletiles");
+  data.append("key", getApiKey());
+  data.append("file", file);
+  data.append("zoom", zoom);
+  data.append("tiles", JSON.stringify(tiles));
+  if (props) data.append("props", JSON.stringify(props));
+  return postWithRetry(data).then(processPath);
+};
 
 export const getRenderedDesign = async ({
   designDetails,
@@ -226,7 +248,6 @@ export const getRenderedDesign = async ({
   const tileSize = 256;
   return new Promise((resolve, reject) => {
     let { Width, Height, KLRatio } = designDetails;
-    console.log("returnnewPromise -> designDetails", designDetails)
     const canvasWidth = Width * zoom;
     const canvasHeight = Height * zoom;
     if (!applyKLRatio) KLRatio = 1;
@@ -315,7 +336,6 @@ export const getFloor = () => {
     if (!floorsFromServer) {
       HttpClient.post(floorDomain).then(response => {
         let floorArr = [];
-        console.log(response)
         floorArr = response.data.map((eachFloor, index) => {
           let config = JSON.parse(eachFloor.config);
           let obj = { ...config, path: `${floorAssetsDomain}${floorRelPath}${eachFloor.diffuse}`, thumb: `${floorAssetsDomain}${floorRelPath}${eachFloor.diffuse.replace('.jpg', '.thumb.jpg')}` };

@@ -36,7 +36,6 @@ export function applyEdgeFilter(canvas, image) {
   return canvas;
 }
 export function applyBWMask(maskCanvas, imageUrl, maskUrl, callback) {
-  //console.log(imageUrl, maskUrl);
   const { width, height } = maskCanvas;
   const tempCanvas = createCanvas(width, height);
   const maskCtx = maskCanvas.getContext("2d");
@@ -75,7 +74,7 @@ export const applyMask = (canvas, imgUrl, maskUrl) => {
   const tempCtx = tempCanvas.getContext("2d");
 
   const readUrls = [readImage(imgUrl), readImage(maskUrl)];
-  return Promise.all(readUrls).then(images => {
+  return Promise.all(readUrls).then((images) => {
     const image = images[0];
     const mask = images[1];
 
@@ -143,7 +142,99 @@ export const downloadImageData = (canvas, name, mime) => {
   );
 };
 
-export const canvasToBlobPromise = canvas =>
+export const canvasToBlobPromise = (canvas) =>
   new Promise((resolve, reject) => {
     canvas.toBlob(resolve);
   });
+
+export function getCroppedSize(srcSize, dstSize, cropPadding = 0) {
+  let width = dstSize.Width,
+    height = dstSize.Height;
+  const { Width: canvasWidth, Height: canvasHeight } = srcSize;
+  const wr = dstSize.Width / canvasWidth;
+  const hr = dstSize.Height / canvasHeight;
+  if (wr > hr) {
+    if (dstSize.Width > canvasWidth) {
+      width = canvasWidth;
+      height = (dstSize.Height * width) / dstSize.Width;
+    }
+  } else {
+    if (dstSize.Height > canvasHeight) {
+      height = canvasHeight;
+      width = (dstSize.Width * height) / dstSize.Height;
+    }
+  }
+  const shouldApplyPad = (width / height).toFixed(1) !== (canvasWidth / canvasHeight).toFixed(1);
+  if (shouldApplyPad) {
+    width = width - cropPadding;
+    height = height - cropPadding;
+  }
+  width = Math.ceil(width);
+  height = Math.ceil(height);
+  const offsetX = (width - srcSize.Width) / 2;
+  const offsetY = (height - srcSize.Height) / 2;
+  return { width, height, offsetX, offsetY };
+}
+
+export const cropStitchCanvas = ({ origCanvas, canvas }) => {
+  const { width: canvasWidth, height: canvasHeight } = origCanvas;
+  const origCtx = origCanvas.getContext("2d");
+  const { width, height } = canvas;
+  const ctx = canvas.getContext("2d");
+
+  if (width === canvasWidth && height === canvasHeight) {
+    ctx.drawImage(origCanvas, 0, 0);
+    return;
+  }
+  const overlapSize = 20;
+  const overlapsx = canvasWidth - width / 2 - overlapSize;
+  const overlapsy = canvasHeight - height / 2 - overlapSize;
+  const wid = width / 2;
+  const hgt = height / 2;
+  const tl = origCtx.getImageData(0, 0, wid, hgt);
+  const tr = origCtx.getImageData(overlapsx, 0, wid + overlapSize, hgt);
+  const bl = origCtx.getImageData(0, overlapsy, wid, hgt + overlapSize);
+  const br = origCtx.getImageData(overlapsx, overlapsy, wid + overlapSize, hgt + overlapSize);
+  const trCanvas = createCanvas(tr.width, tr.height);
+  const trCtx = trCanvas.getContext("2d");
+  trCtx.putImageData(tr, 0, 0);
+  trCtx.globalCompositeOperation = "destination-out";
+  let trgrd = trCtx.createLinearGradient(0, 0, overlapSize, 0);
+  trgrd.addColorStop(0, "black");
+  trgrd.addColorStop(1, "transparent");
+  trCtx.fillStyle = trgrd;
+  trCtx.fillRect(0, 0, overlapSize, tr.height);
+  // document.body.appendChild(trCanvas);
+
+  const blCanvas = createCanvas(bl.width, bl.height);
+  const blCt = blCanvas.getContext("2d");
+  blCt.putImageData(bl, 0, 0);
+  blCt.globalCompositeOperation = "destination-out";
+  let blgrd = blCt.createLinearGradient(0, 0, 0, overlapSize);
+  blgrd.addColorStop(0, "black");
+  blgrd.addColorStop(1, "transparent");
+  blCt.fillStyle = blgrd;
+  blCt.fillRect(0, 0, bl.width, overlapSize);
+  // document.body.appendChild(blCanvas);
+
+  const brCanvas = createCanvas(br.width, br.height);
+  const brCt = brCanvas.getContext("2d");
+  brCt.putImageData(br, 0, 0);
+  brCt.globalCompositeOperation = "destination-out";
+  let brgrd = brCt.createLinearGradient(0, 0, 0, overlapSize);
+  brgrd.addColorStop(0, "black");
+  brgrd.addColorStop(1, "transparent");
+  brCt.fillStyle = brgrd;
+  brCt.fillRect(0, 0, br.width, overlapSize);
+
+  let brgrd1 = brCt.createLinearGradient(0, 0, overlapSize, 0);
+  brgrd1.addColorStop(0, "black");
+  brgrd1.addColorStop(1, "transparent");
+  brCt.fillStyle = brgrd1;
+  brCt.fillRect(0, 0, overlapSize, bl.height);
+
+  ctx.putImageData(tl, 0, 0);
+  ctx.drawImage(trCanvas, width - tr.width, 0);
+  ctx.drawImage(blCanvas, 0, height - bl.height);
+  ctx.drawImage(brCanvas, width - br.width, height - br.height);
+};

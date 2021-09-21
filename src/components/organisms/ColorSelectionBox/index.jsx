@@ -33,7 +33,6 @@ const ColorSelectionBox = props => {
   }, [collectionIndex, filteredCollection]);
   const handleColorSwatchClick = (color, e) => {
     e.stopPropagation();
-    console.log('handleColorSwatchClick')
   };
 
   return (

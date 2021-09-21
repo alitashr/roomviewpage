@@ -7,12 +7,12 @@ import { createCanvas, downloadImageData } from "../../../utils/canvasUtils";
 import InputCanvas from "../../molecules/InputCanvas";
 import RoomViewHelper from "./roomviewhelper";
 import { getRenderedDesign } from "../../../api/appProvider";
+import { getDominantColor } from "../../../utils/colorUtils";
 
 let roomViewHelper = new RoomViewHelper();
 const RoomView = (props) => {
   const { roomData, designImageProps, onRendered, onRoomLoaded, className = "" } = props;
-  const { Name: roomName, Dir: dir, Files, baseUrl, config, activeFloor } = roomData;
-  console.log("RoomView -> activeFloor", activeFloor);
+  const { Name: roomName, Dir: dir, Files, baseUrl, config, activeFloor, floorOptions } = roomData;
   const { designImagePath, designName, designDetails, fullpath } = designImageProps;
 
   const containerRef = useRef(null);
@@ -39,6 +39,8 @@ const RoomView = (props) => {
   }, [windowSize]);
 
   useMount(() => {
+    roomViewHelper.initFlags({});
+    
     const canvasConfig = {
       bgCanvas: bgCanvasRef.current,
       threeCanvas: threeCanvasRef.current,
@@ -51,7 +53,6 @@ const RoomView = (props) => {
     roomViewHelper.initCanvas(canvasConfig);
   });
   useEffect(() => {
-    console.log("RoomView -> activeFloor", activeFloor);
     if (!activeFloor) return;
     //if (isRendering || !activeFloor || designDetailState.loading) return;
 
@@ -68,9 +69,9 @@ const RoomView = (props) => {
   useEffect(() => {
     let la = true;
     const renderFloorInRoom = (activeFloor) => {
-      console.log("useEffect, renderFloorInRoom -> activeFloor", activeFloor);
-      if (!activeFloor) return Promise.resolve();
-      return roomViewHelper.renderFloor(activeFloor);
+      if (!floorOptions) return Promise.resolve();
+      const floor = activeFloor && activeFloor.path ? activeFloor : floorOptions.activeFloor;
+      return roomViewHelper.renderFloor(floor);
     };
 
     const loadRoom = async () => {
@@ -80,17 +81,22 @@ const RoomView = (props) => {
           roomViewHelper.makeTransitionCanvas();
           if (!Files.length) return;
           const files = Files.map((file) => (file[0] === "/" ? file : "/" + file));
-          console.log("loadRoom -> baseUrl", baseUrl)
+          //console.log("loadRoom -> baseUrl", baseUrl)
           
           await Promise.all(roomViewHelper.initConfig({ baseUrl, config, files }));
           if (!la) return;
-          roomViewHelper.updateBackground();
+          const dominantColorHex = getDominantColor(designDetails);
+          roomViewHelper.updateBackground({ dominantColorHex });
+          roomViewHelper.updateShadow({ clear: true });
           roomViewHelper.updateMask();
+          
           onRoomLoaded();
           if (prevDesignImagePath === designImagePath) {
             await roomViewHelper.updatethreeCanvas();
             if (!la) return;
             roomViewHelper.updateShadow();
+            await renderFloorInRoom(activeFloor);
+            if (!la) return;
           }
         } else {
           onRoomLoaded();
@@ -102,14 +108,20 @@ const RoomView = (props) => {
               customUrl: designImagePath,
             });
             await renderFloorInRoom(activeFloor);
-
             onRendered();
           } else {
             await roomViewHelper.renderFromJpg({ designImage: designImagePath });
             onRendered();
           }
           roomViewHelper.updateShadow();
-        } else if (prevDesignDetails !== designDetails) {
+        } 
+        else if (prevDesignDetails !== designDetails) {
+          if (roomViewHelper.patchImage) {
+            const dominantColorHex = getDominantColor(designDetails);
+            roomViewHelper.updateBackground({ dominantColorHex });
+            roomViewHelper.updateMask();
+          }
+          //await setRoomTileDetails();
           await roomViewHelper.updatethreeCanvas();
           if (!la) return;
           const renderedDesignImage = await getRenderedDesign({
@@ -121,11 +133,13 @@ const RoomView = (props) => {
           roomViewHelper.renderImage({ image: renderedDesignImage });
           await renderFloorInRoom(activeFloor);
 
-          roomViewHelper.updateShadow();
-          await roomViewHelper.makeTransitionCanvas({ clear: true });
         } else {
           onRendered();
         }
+        roomViewHelper.updateShadow();
+        await roomViewHelper.makeTransitionCanvas({ clear: true });
+     
+
       } catch (error) {
         console.error(error);
         return;

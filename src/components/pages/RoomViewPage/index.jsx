@@ -1,12 +1,16 @@
 import { Button } from "antd";
 import classNames from "classnames";
 import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { getFloor } from "../../../api/appProvider";
 import { assetsFolder, defaultRoomdata, initialDesignProps } from "../../../constants/constants";
 import { getDesignData, getRoomData } from "../../../MiddlewareFunc/getInfo";
+import { setFloorOptions } from "../../../redux";
 import { openFile, preload, readImageFromUrl, readJSON } from "../../../utils/fileUtils";
 import { AtSpinnerOverlay } from "../../atoms/AtSpinner";
 import VideoPlayer from "../../molecules/VideoPlayer";
 import ExplorugIframePopup from "../../organisms/ExplorugIframePopup";
+import RoomContainer from "../../organisms/RoomContainer";
 import RoomView from "../../organisms/RoomView";
 
 const RoomViewPage = (props) => {
@@ -16,25 +20,34 @@ const RoomViewPage = (props) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showIframe, setShowIframe] = useState(false);
   let hasOverlayVideo = sessionStorage.getItem("hasOverlayVideo") || false;
+  const dispatch = useDispatch();
+  
   useEffect(() => {
-    let roomPath = sessionStorage.getItem("initview") || "";
-    const roomDataJSON = getRoomData(defaultRoomdata, roomPath);
-    const baseUrl = assetsFolder + roomDataJSON.Dir;
-
-    readJSON(`${baseUrl}/config.json`).then((config) => {
-      const roomData = { ...roomDataJSON, config, baseUrl };
-      setRoomData(roomData);
+    window.flags = {};
+    window.InterfaceElements = {};
+    getFloor().then(floors=>{
+      dispatch(setFloorOptions(floors))
     });
 
-    let designPath = sessionStorage.getItem("initdesign") || "";
-    const designDataJSON = getDesignData(initialDesignProps, designPath);
+    // let roomPath = sessionStorage.getItem("initview") || "";
+    // const roomDataJSON = getRoomData(defaultRoomdata, roomPath);
+    // const baseUrl = assetsFolder + roomDataJSON.Dir;
 
-    readImageFromUrl(designDataJSON.designImagePath).then((blob) => {
-      openFile(blob, (designImagePath) => {
-        setDesignImageProps({ designName: designDataJSON.designName, designImagePath });
-      });
-    });
+    // readJSON(`${baseUrl}/config.json`).then((config) => {
+    //   const roomData = { ...roomDataJSON, config, baseUrl };
+    //   setRoomData(roomData);
+    // });
+
+    // let designPath = sessionStorage.getItem("initdesign") || "";
+    // const designDataJSON = getDesignData(initialDesignProps, designPath);
+
+    // readImageFromUrl(designDataJSON.designImagePath).then((blob) => {
+    //   openFile(blob, (designImagePath) => {
+    //     setDesignImageProps({ designName: designDataJSON.designName, designImagePath });
+    //   });
+    // });
   }, []);
+  
   const getVideoPlayerClassName = (roomDir) => {
     const roomNameParts = roomDir.split("/");
     const roomName = roomNameParts.pop();
@@ -49,12 +62,12 @@ const RoomViewPage = (props) => {
     let videoPath = `${assetsFolder}OverlayVideos/${roomName}.mp4`;
     return videoPath;
   };
-  useEffect(() => {
-    if (roomData) {
-      const { Files: files, baseUrl, config } = roomData;
-      preload({ baseUrl, config, files });
-    }
-  }, [roomData]);
+  // useEffect(() => {
+  //   if (roomData) {
+  //     const { Files: files, baseUrl, config } = roomData;
+  //     preload({ baseUrl, config, files });
+  //   }
+  // }, [roomData]);
 
   const handleBtnClick = () => {
     const key = sessionStorage.getItem("key") || "";
@@ -70,7 +83,7 @@ const RoomViewPage = (props) => {
   };
   return (
     <div className={classNames("at-roomview-container", className)}>
-      {roomData && designImageProps && (
+     
         <>
           {hasOverlayVideo && (
             <VideoPlayer
@@ -78,8 +91,11 @@ const RoomViewPage = (props) => {
               src={getVideoPlayerSrc(roomData.Dir)}
             ></VideoPlayer>
           )}
+           <RoomContainer onRoomRendered={()=>{
+         setIsLoading(false);
+      }}></RoomContainer>
 
-          <RoomView
+          {/* <RoomView
             className={classNames({ "room-view-overlay": hasOverlayVideo })}
             onRendered={() => {
               setIsLoading(false);
@@ -90,9 +106,9 @@ const RoomViewPage = (props) => {
             }}
             roomData={roomData}
             designImageProps={designImageProps}
-          />
+          /> */}
         </>
-      )}
+      
       {isLoading && (
         <div className="spinner-container">
           <AtSpinnerOverlay show={isLoading}></AtSpinnerOverlay>

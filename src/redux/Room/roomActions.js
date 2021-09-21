@@ -42,19 +42,20 @@ export const setFloorOptions = (payload) => {
   };
 };
 export const setActiveFloorOption = (payload) => {
-  console.log("setActiveFloorOption -> payload", payload);
   return {
     type: SET_ACTIVE_FLOOR_OPTION,
     payload: payload,
   };
 };
 
-export const fetchBasicDetails = () => {
+export const fetchBasicRoomDetails = () => {
   return (dispatch) => {
     let roomPath = sessionStorage.getItem("initview") || "";
     const roomDataJSON = getRoomData(defaultRoomdata, roomPath);
+    console.log("return -> roomDataJSON", roomDataJSON)
     dispatch(setRoomBasicDetails(roomDataJSON));
     const baseUrl = assetsFolder + roomDataJSON.Dir;
+    
     readJSON(`${baseUrl}/config.json`).then(async (config) => {
       const name = roomDataJSON.Name || "";
       let roomData = { ...roomDataJSON, config, baseUrl };

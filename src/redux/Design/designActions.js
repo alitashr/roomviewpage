@@ -15,7 +15,6 @@ export const designActions = {
 };
 
 const setDesignName = (name) => {
-console.log("setDesignName -> name", name)
   return {
     type: SET_DESIGN_NAME,
     payload: name,
@@ -44,10 +43,8 @@ export const setInitialDesignProps = () => {
   return (dispatch) => {
     let designPath = sessionStorage.getItem("initdesign") || "";
     const designDataJSON = getDesignData(initialDesignProps, designPath);
-    console.log("return -> designDataJSON", designDataJSON)
     readImageFromUrl(designDataJSON.designImagePath).then((blob) => {
       openFile(blob, (designImagePath) => {
-        console.log("openFile -> designImagePath", designImagePath)
         dispatch(setDesignName(designDataJSON.designName));
         dispatch(setDesignImagePath(designImagePath));
       });

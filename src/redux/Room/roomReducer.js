@@ -11,7 +11,6 @@ const initialState = {
 }
 
 const roomReducer = (state=initialState, action)=>{
-//console.log("roomReducer -> action", action.type, action.payload)
   switch (action.type) {
     case roomActions.SET_ROOM_BASIC_DETAILS:
       return{

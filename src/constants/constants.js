@@ -1,7 +1,7 @@
 export const assetsFolder = './';//process.env.SERVER !=='local' ? 'https://cdn.explorug.com/explorugentry/roomview/':  './'; //'./'
 console.log("assetsFolder", assetsFolder)
 export const defaultRoomdata = {
-  Dir: assetsFolder + "Rooms/ARBEITSZIMMER1",
+  Dir: "Rooms/ARBEITSZIMMER1",
   Name: "ARBEITSZIMMER1",
   Files: [
     "Shot_1.bg.jpg",
@@ -11,5 +11,5 @@ export const defaultRoomdata = {
 };
 export const initialDesignProps = {
   designName: "Thornure",
-  designImagePath: assetsFolder+"Designs/Thornure.jpg"
+  designImagePath: "Designs/Thornure.jpg"
 }

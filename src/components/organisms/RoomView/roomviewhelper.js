@@ -1,9 +1,11 @@
-
-import { clearCanvas, createCanvas, cropStitchCanvas, downloadImageData } from "../../../utils/canvasUtils";
+import { clearCanvas, createCanvas, cropStitchCanvas, downloadImageData, getCroppedSize } from "../../../utils/canvasUtils";
 import { convertArrintoDeg, convertUnit } from "../../../utils/converter";
 import { makeUrl, readImage } from "../../../utils/fileUtils";
 import { resizeKeepingAspect } from "../../../utils/utils";
 import ThreeViewHelper from "./threeviewhelper";
+
+import TileCanvas from "./tilecanvasnew";
+const tileCanvas = new TileCanvas();
 
 function createName() {
   let res = "";
@@ -44,6 +46,10 @@ export default class RoomViewHelper {
 
     this.zoom = 2;
     this.currentActiveColors = [];
+    this.flags = {}
+  }
+  initFlags(flags){
+    this.flags = flags;
   }
 
   initCanvas(options) {
@@ -79,8 +85,8 @@ export default class RoomViewHelper {
     this.dimensionPixels = resizeKeepingAspect(illustrationDims, containerDims, "fit_inside");
 
     this.dimension = {
-      width: sizeFromConfig && illustrationDims.width ? illustrationDims.width: window.screen.width * this.resolution,
-      height:sizeFromConfig && illustrationDims.height ? illustrationDims.height: window.screen.height * this.resolution
+      width: sizeFromConfig && illustrationDims.width ? illustrationDims.width : window.screen.width * this.resolution,
+      height: sizeFromConfig && illustrationDims.height ? illustrationDims.height : window.screen.height * this.resolution
     };
     this.resolution = this.dimension.width / this.dimensionPixels.width;
     this.inputCanvas.width = this.dimensionPixels.width;
@@ -245,16 +251,54 @@ export default class RoomViewHelper {
       baseUrl: this.baseUrl,
       roomType
     });
-   switch (roomType) {
-    case "illustration":
-      return this.threeView.setupSceneObjects({ fbxUrl: makeUrl(this.baseUrl, sceneConfig.modelUrl) });
-    default:
-      return this.threeView.setupSceneObjects({ fbxUrl: "https://v3.explorug.com/v3assets/rug.fbx" });
+    return this.threeView.setupSceneObjects({ carpetRotation });
   }
-  //return this.threeView.setupSceneObjects({ fbxUrl: "https://v3.explorug.com/rug.fbx" });
-  
-  }
-  renderImage({image, physicalWidth, physicalHeight}){
+ 
+  // renderDesignFromCustomUrl({ customUrl, physicalWidth, physicalHeight, unit='cm' }) {
+  //   return new Promise((resolve, reject) => {
+  //     readImage(customUrl)
+  //       .then(image => {
+  //         const { width, height } = image;
+  //         const designCanvas = createCanvas(width, height);
+  //         const ctx = designCanvas.getContext("2d");
+  //         ctx.drawImage(image, 0, 0);
+
+  //         const normapCanvas = createCanvas(width, height);
+  //         const ctxNorm = normapCanvas.getContext("2d");
+  //         ctxNorm.fillStyle = "rgb(127,127,255)";
+  //         ctxNorm.fillRect(0, 0, width, height);
+  //         let PhysicalWidth, PhysicalHeight;
+  //         if (!physicalWidth || !physicalHeight) {
+  //           const maxDims = { width: 1200, height: 1500 };
+  //           const { width: newWidth, height: newHeight } = resizeKeepingAspect(
+  //             { width, height },
+  //             maxDims,
+  //             "fit_inside"
+  //           );
+  //           PhysicalWidth = convertUnit("in", "ft", newWidth / 10);
+  //           PhysicalHeight = convertUnit("in", "ft", newHeight / 10);
+  //         } else {
+  //           PhysicalWidth = convertUnit(unit, "ft", physicalWidth);
+  //           PhysicalHeight = convertUnit(unit, "ft", physicalHeight);
+  //         }
+  //         const designDetails = {
+  //           Width: width,
+  //           Height: height,
+  //           PhysicalWidth,
+  //           PhysicalHeight,
+  //           Unit: "ft"
+  //         };
+
+  //         this.threeView.setCarpetTexture({ designDetails, designCanvas, normapCanvas });
+  //         this.updateGizmo();
+  //         resolve();
+  //       })
+  //       .catch(err => {
+  //         reject(err);
+  //       });
+  //   });
+  // }
+  renderImage({image, physicalWidth, physicalHeight, unit='cm' }){
     const { width, height } = image;
     const designCanvas = createCanvas(width, height);
     const ctx = designCanvas.getContext("2d");
@@ -275,8 +319,8 @@ export default class RoomViewHelper {
       PhysicalWidth = convertUnit("in", "ft", newWidth / 10);
       PhysicalHeight = convertUnit("in", "ft", newHeight / 10);
     } else {
-      PhysicalWidth = convertUnit("cm", "ft", physicalWidth);
-      PhysicalHeight = convertUnit("cm", "ft", physicalHeight);
+      PhysicalWidth = convertUnit(unit, "ft", physicalWidth);
+      PhysicalHeight = convertUnit(unit, "ft", physicalHeight);
     }
     const designDetails = {
       Width: width,
@@ -290,11 +334,11 @@ export default class RoomViewHelper {
     this.updateGizmo();
   }
 
-  renderDesignFromCustomUrl({ customUrl, physicalWidth, physicalHeight }) {
+  renderDesignFromCustomUrl({ customUrl, physicalWidth, physicalHeight, unit='cm'  }) {
     return new Promise((resolve, reject) => {
       readImage(customUrl)
         .then(image => {
-          this.renderImage ({image, physicalWidth, physicalHeight})
+          this.renderImage ({image, physicalWidth, physicalHeight, unit})
           resolve();
         })
         .catch(err => {
@@ -303,8 +347,143 @@ export default class RoomViewHelper {
     });
   }
 
+  renderDesign({ designDetails, designPath, hash, designDimsOrig }) {
+    //designDimsorig is required for studiop.
+    this.designDetails = designDetails;
+    this.designPath = designPath;
+    const { roomType } = this.config;
+    const { designScale, canvasSize, renderBounds, offset } = this.config[this.config.scenes[0]];
+    if (designScale) this.zoom = designScale;
+    else this.zoom = 2;
+    const isDimsOrig =
+      designDimsOrig.Width === designDetails.Width &&
+      designDimsOrig.Height === designDetails.Height;
+
+    let tileTransparency;
+    try {
+      tileTransparency = this.tileDetails[`tileTransparency${this.zoom}`]; //reading tile transparency from
+    } catch (error) {
+      console.log(error);
+    }
+    //TODO: convert this to param of function
+    if (window.InterfaceElements.IsJpeg) {
+      this.zoom = 1; // is always 1 for jpeg
+      tileTransparency = [1];
+    }
+    let desDetails = { ...designDetails };
+    if (!isDimsOrig) desDetails = { ...desDetails, ...designDimsOrig };
+    tileCanvas.init({
+      tileSize: 256,
+      zoom: this.zoom,
+      designDetails: desDetails,
+      canvasSize,
+      renderBounds,
+      offset
+    });
+    switch (roomType) {
+      case "illustration":
+        return new Promise((resolve, reject) => {
+          this.threeView.setObjectTexture({
+            designDetails,
+            designCanvas: tileCanvas.canvas
+          });
+          // this.threeView.setObjectVisibility(false)
+          let drawNormap = tileTransparency.length;
+          if (!this.flags.applyNormalMapInJPEG && window.InterfaceElements.IsJpeg) {
+            drawNormap = false;
+          }
+          tileCanvas.drawCanvasTiles(
+            {
+              designPath,
+              zoom: this.zoom,
+              designDetails,
+              hash,
+              drawNormap,
+              tileTransparency
+            },
+            () => {
+              // this.threeView.updateMap()
+            },
+            () => {
+              this.threeView.updateMap();
+              setTimeout(() => {
+                resolve();
+                // this.threeView.setObjectVisibility(true)
+              }, 500);
+            }
+          );
+        });
+
+      default:
+        return new Promise((resolve, reject) => {
+          this.designCanvasMod = createCanvas(tileCanvas.width, tileCanvas.height);
+          this.normalCanvasMod = createCanvas(tileCanvas.width, tileCanvas.height);
+
+          this.threeView.setCarpetTexture({
+            designDetails: desDetails,
+            designCanvas: this.designCanvasMod,
+            normapCanvas: this.normalCanvasMod
+          });
+          this.threeView.setCarpetVisibility(false);
+          const { DesignColors } = designDetails;
+          let drawNormap =
+            !DesignColors.every(
+              color => color.PileHeight === DesignColors[0].PileHeight && !color.Carving
+            ) || tileTransparency.length;
+          if (!this.flags.applyNormalMapInJPEG && window.InterfaceElements.IsJpeg) {
+            drawNormap = false;
+          }
+          const options = {
+            designPath,
+            zoom: this.zoom,
+            designDetails: desDetails,
+            hash,
+            tileTransparency,
+            drawNormap
+          };
+          tileCanvas.drawCanvasTiles(
+            options,
+            () => { }, // function to call after each tile render
+            () => {
+              // function to call after render is complete
+              if (!isDimsOrig && this.flags.ordersheet.repeatRugInArea) {
+                this.repeatDesignForOverSize({
+                  onComplete: () => {
+                    this.threeView.setCarpetScale(this.designDetails);
+                    this.threeView.updateMap();
+                    this.threeView.setCarpetVisibility(true);
+                    this.updateGizmo();
+                    resolve();
+                  }
+                });
+              }
+              else {
+                const cropPadding = 100;
+                if (!isDimsOrig) {
+                  const { width, height } = getCroppedSize(
+                    designDimsOrig,
+                    designDetails,
+                    cropPadding
+                  );
+                  this.designCanvasMod.width = width;
+                  this.designCanvasMod.height = height;
+                  this.normalCanvasMod.width = width;
+                  this.normalCanvasMod.height = height;
+                }
+                cropStitchCanvas({ origCanvas: tileCanvas.canvas, canvas: this.designCanvasMod });
+                cropStitchCanvas({ origCanvas: tileCanvas.canvasNorm, canvas: this.normalCanvasMod });
+
+                this.threeView.updateMap(); //
+                this.threeView.setCarpetVisibility(true);
+                this.updateGizmo();
+                resolve();
+              }
+            }
+          );
+        });
+    }
+  }
   renderFloor({ path }) {
-    console.log("renderFloor -> renderFloor")
     return new Promise((resolve, reject) => {
       if (!this.threeView) {
         resolve();
@@ -323,7 +502,6 @@ export default class RoomViewHelper {
         }
         this.floorCanvas.getContext("2d").drawImage(floorImage, 0, 0);
         this.threeView.setFloorTexture({ floorCanvas: this.floorCanvas });
-        console.log('floorImage.width, floorImage.height', floorImage.width, floorImage.height)
         resolve();
       });
     });
@@ -370,7 +548,162 @@ export default class RoomViewHelper {
   setTileDetails(tileDetails) {
     this.tileDetails = tileDetails;
   }
- 
+  updateTiles({ designDetails, updateDesignTiles, updateNormapTiles, hash, designDimsOrig }) {
+    if (!this.tileDetails) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+      //todo: implement cropped size
+      let colorIndex;
+      if (updateDesignTiles) colorIndex = updateDesignTiles.colorIndex;
+      if (updateNormapTiles) colorIndex = updateNormapTiles.colorIndex;
+      const isDimsOrig =
+        designDimsOrig.Width === designDetails.Width &&
+        designDimsOrig.Height === designDetails.Height;
+
+      if (this.designDetails.DesignColors === designDetails.DesignColors) {
+        this.designDetails = designDetails;
+        this.threeView.setCarpetScale(designDetails);
+        let startX = 0;
+        let startY = 0;
+
+        if (!isDimsOrig && this.flags.ordersheet.repeatRugInArea) {
+          this.repeatDesignForOverSize({
+            onComplete: () => {
+              this.threeView.setCarpetScale(this.designDetails);
+              this.threeView.updateMap();
+              resolve();
+              return;
+            }
+          });
+        }
+        else {
+          if (!isDimsOrig) {
+            const cropPadding = 100;
+            const { width, height, offsetX, offsetY } = getCroppedSize(
+              designDimsOrig,
+              designDetails,
+              cropPadding
+            );
+            startX = offsetX;
+            startY = offsetY;
+            this.designCanvasMod.width = width;
+            this.designCanvasMod.height = height;
+            this.normalCanvasMod.width = width;
+            this.normalCanvasMod.height = height;
+          } else {
+            const width = designDimsOrig.Width;
+            const height = designDimsOrig.Height;
+            this.designCanvasMod.width = width;
+            this.designCanvasMod.height = height;
+            this.normalCanvasMod.width = width;
+            this.normalCanvasMod.height = height;
+          }
+          cropStitchCanvas({ origCanvas: tileCanvas.canvas, canvas: this.designCanvasMod });
+          cropStitchCanvas({ origCanvas: tileCanvas.canvasNorm, canvas: this.normalCanvasMod });
+          this.threeView.updateMap();
+          resolve();
+          return;
+        }
+
+      }
+      this.designDetails = designDetails;
+
+      let colorTileData = null;
+
+      if (colorIndex && colorIndex !== -1 && !this.flags.isFelt) {
+        const tileData = this.tileDetails[`colorTileData${this.zoom}`];
+        colorTileData = tileData[colorIndex].tiles;
+      } else {
+        //all tiles
+      }
+      const tileTransparency = this.tileDetails[`tileTransparency${this.zoom}`];
+
+      const props = {
+        tiles: colorTileData,
+        zoom: this.zoom,
+        designDetails,
+        designPath: this.designPath,
+        hash,
+        tileTransparency
+      };
+      if (!updateNormapTiles) {
+        tileCanvas.designTilesUpdated = true;
+        tileCanvas.updateDesignTiles(
+          props,
+          () => {
+            this.threeView.updateMap();
+          },
+          () => {
+            if (this.designCanvasMod)
+              this.designCanvasMod.getContext("2d").drawImage(tileCanvas.canvas, 0, 0);
+            this.threeView.updateMap();
+            setTimeout(() => {
+              resolve();
+            }, 500);
+          }
+        );
+      } else {
+        tileCanvas.normapTilesUpdated = true;
+        tileCanvas.updateNormapTiles(
+          props,
+          () => {
+            this.threeView.updateMap();
+          },
+          () => {
+            if (this.normalCanvasMod)
+              this.normalCanvasMod.getContext("2d").drawImage(tileCanvas.canvasNorm, 0, 0);
+            this.threeView.updateMap();
+            setTimeout(() => {
+              resolve();
+            }, 500);
+          }
+        );
+        // this.tileCanvas1x.updateNo(props, () => this.render())
+      }
+    });
+  }
+  repeatDesignForOverSize({ onComplete }) {
+    const width = this.designDetails.Width;
+    const height = this.designDetails.Height;
+    this.designCanvasMod.width = width;
+    this.designCanvasMod.height = height;
+    this.normalCanvasMod.width = width;
+    this.normalCanvasMod.height = height;
+
+    const img = new Image();
+    const img1 = new Image();
+    let imgloaded = false, img1loaded = false;
+
+    const repeatImg = (canvas, img, width, height) => {
+      var ctx = canvas.getContext("2d");
+      var pat = ctx.createPattern(img, "repeat");
+      ctx.rect(0, 0, width, height);
+      ctx.fillStyle = pat;
+      ctx.fill();
+    }
+
+    const finish = () => {
+      if (imgloaded && img1loaded) {
+        onComplete();
+        return;
+      }
+    }
+
+    img.onload = () => {
+      repeatImg(this.designCanvasMod, img, width, height);
+      imgloaded = true;
+      finish();
+    };
+    img1.onload = () => {
+      repeatImg(this.normalCanvasMod, img1, width, height);
+      img1loaded = true;
+      finish();
+    };
+
+    img.src = tileCanvas.canvas.toDataURL();
+    img1.src = tileCanvas.canvasNorm.toDataURL();
+  }
   updateMask(options = {}) {
     const { clear = false } = options;
     const { width, height } = this.dimension;
@@ -417,13 +750,22 @@ export default class RoomViewHelper {
     tCtx.globalCompositeOperation = "destination-in";
     tCtx.drawImage(threeLayer, 0, 0, width, height);
     this.shadowCanvas.getContext("2d").drawImage(tempCanvas, 0, 0, width, height);
- 
+    if (this.flags && this.flags.designView && this.flags.designView.hasDesignWaterMark) {
+      const img = await readImage(window.InterfaceElements.LogoUrl);
+      const imgwidth = 100;
+      const imgheight = (img.height * imgwidth) / img.width;
+
+      const startx = width - (imgwidth + 15);
+      const starty = height - (imgheight + 15);
+      const context = this.shadowCanvas.getContext("2d");
+      context.globalAlpha = 0.5;
+      context.drawImage(img, startx, starty, imgwidth, imgheight);
+    }
   }
   makeTransitionCanvas(options = {}) {
     // return
     const { clear = false } = options;
-    if(this.transitionCanvas)
-      clearCanvas(this.transitionCanvas, this.transitionCanvas.width, this.transitionCanvas.height);
+    clearCanvas(this.transitionCanvas, this.transitionCanvas.width, this.transitionCanvas.height);
     if (clear) return "clear";
     setCanvasDimensions(this.transitionCanvas, this.dimension, this.dimensionPixels);
     const transitionctx = this.transitionCanvas.getContext("2d");
@@ -461,6 +803,7 @@ export default class RoomViewHelper {
     }
   }
   mouseDownTouchMove(e) {
+    if(!e) return;
     const difference = e.x - this.prev.x;
     this.moved = difference > 10;
     if (!this.intersectsGizmo) {
@@ -483,7 +826,7 @@ export default class RoomViewHelper {
     let position = null;
     const object = this.threeView.getObjectConfig();
     let texCoordinates;
-    const intersect = this.threeView.raycastMouseOnSurface(e) ;
+    const intersect = this.threeView.raycastMouseOnSurface(e);
     if (intersect && this.designDetails) {
       const x = this.designDetails.Width * intersect.uv.x;
       const y = this.designDetails.Height * (1 - intersect.uv.y);

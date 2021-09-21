@@ -53,7 +53,6 @@ export const config2Point1 = (name, baseUrl, config) => {
             }
           }
         }
-        console.log(mappedConfig);
         resolve(mappedConfig);
       });
 

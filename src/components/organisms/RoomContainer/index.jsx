@@ -3,21 +3,20 @@ import React from 'react';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setInitialDesignProps, setDesignName, setDesignImagePath } from '../../../redux/Design/designActions';
-import { fetchBasicDetails } from '../../../redux/Room/roomActions';
+import { fetchBasicRoomDetails } from '../../../redux/Room/roomActions';
 import { preload } from '../../../utils/fileUtils';
 import RoomView from '../RoomView';
 
 const RoomContainer = props => {
-  const {className} = props;
+  const {className, onRoomRendered} = props;
   const roomData = useSelector(state=> state.room);
   const dispatch = useDispatch();  
   const designData = useSelector(state=> state.design);
   const designlist = useSelector(state=> state.designlist);
  
-
   useEffect(()=>{
     dispatch(setInitialDesignProps()) 
-    dispatch(fetchBasicDetails()) 
+    dispatch(fetchBasicRoomDetails()) 
   },[]);
 
   useEffect(() => {
@@ -26,18 +25,11 @@ const RoomContainer = props => {
       preload({ baseUrl, config, files });
     }
   }, [roomData]);
-
- 
-  useEffect(() => {
-    console.log('designData ', designData)
-  }, [designData]);
   
   useEffect(() => {
-    console.log(designData, designlist);
     if(!designlist.selectedFile || !designData.designName) return;
     
     if(designlist.selectedFile.name.toLowerCase() !== designData.designName.toLowerCase()){
-      console.log('designlist ', designlist.selectedFile.name, designData.designName )
       //dispatch(setDesignName(designlist.selectedFile.name));
 
       //(setDesignImagePath(designImagePath));
@@ -56,6 +48,7 @@ const RoomContainer = props => {
         
         }}
         onRoomLoaded={() => {
+          if(onRoomRendered) onRoomRendered();
           // console.log("room has been loaded");
         }}
         roomData={roomData}

@@ -31,7 +31,6 @@ export const getDesignData = (initialDesignProps, designPath = "") => {
     designData.designName = designName;
     designData.designImagePath = designPath;
   }
-  console.log("getDesignData -> designData", designData)
- return designData;
+  return designData;
 };
  
