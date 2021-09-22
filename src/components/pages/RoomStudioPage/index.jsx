@@ -13,6 +13,9 @@ import FloorOptionsContainer from "../../organisms/FloorOptionsContainer";
 const RoomStudioPage = (props) => {
   const designlist = useSelector((state) => state.designlist);
   const roomData = useSelector((state) => state.room);
+  const {config, floorOptions} = roomData;
+  //const { scene1} = config;
+  //console.log("RoomStudioPage -> scene1", scene1)
   //console.log("RoomStudioPage -> roomData", roomData)
 
   const dispatch = useDispatch();
@@ -61,7 +64,7 @@ const RoomStudioPage = (props) => {
         <DesignlistContainer></DesignlistContainer>
         <ColorlistContainer></ColorlistContainer>
 
-        {roomData && roomData.floorOptions && (
+        {floorOptions && config && config.scene1.floor &&  (
           <FloorOptionsContainer
             floorOptions={roomData.floorOptions}
             activeFloor={roomData.activeFloor ? roomData.activeFloor: roomData.floorOptions.activeFloor}

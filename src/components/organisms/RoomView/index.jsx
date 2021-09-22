@@ -100,11 +100,7 @@ const RoomView = (props) => {
         if (prevRoomDetails !== roomData) {
           roomViewHelper.makeTransitionCanvas();
           if (!Files.length) return;
-          console.log("loadRoom -> Files", Files)
-          
           const files = Files.map((file) => (file[0] === "/" ? file : "/" + file));
-          console.log("loadRoom -> baseUrl", files)
-          
           await Promise.all(roomViewHelper.initConfig({ baseUrl, config, files }));
           if (!la) return;
           const dominantColorHex = getDominantColor(designDetails);

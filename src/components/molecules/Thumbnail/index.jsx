@@ -77,7 +77,7 @@ const Thumbnail = props => {
     >
       <div
         className={classNames("thumb-image-container", aspect, {
-          "bp3-skeleton": !thumbUrl || isloading
+          "skeleton": !thumbUrl || isloading
         })}
         style={{
           backgroundImage: getBgImage(),

@@ -50,7 +50,9 @@ $thumb-title-margin: 0.5rem;
   border: 2px solid transparent;
   background-position: center;
   background-repeat: repeat-y;
-
+  &.skeleton{
+    visibility: hidden !important;
+  }
   &:before {
     content: " ";
     display: block;
@@ -65,6 +67,7 @@ $thumb-title-margin: 0.5rem;
     width: 100%;
     padding-top: 66.66%;
   }
+  
 }
 
 .thumb-image {

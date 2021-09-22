@@ -35,7 +35,9 @@ const selectCollection  = (payload)=>{
 export const getColorList = ()=>{
   return (dispatch)=>{
     fetchColorList().then(colorlist=>{
+    if(colorlist!=='nosession' && colorlist!==''){
       dispatch(setColorList(colorlist))
+    }
     })
   }
 }

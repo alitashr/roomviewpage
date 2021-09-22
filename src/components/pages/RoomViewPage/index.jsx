@@ -3,20 +3,15 @@ import classNames from "classnames";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getFloor } from "../../../api/appProvider";
-import { assetsFolder, defaultRoomdata, initialDesignProps } from "../../../constants/constants";
-import { getDesignData, getRoomData } from "../../../MiddlewareFunc/getInfo";
+import { assetsFolder } from "../../../constants/constants";
 import { setFloorOptions } from "../../../redux";
-import { openFile, preload, readImageFromUrl, readJSON } from "../../../utils/fileUtils";
 import { AtSpinnerOverlay } from "../../atoms/AtSpinner";
 import VideoPlayer from "../../molecules/VideoPlayer";
 import ExplorugIframePopup from "../../organisms/ExplorugIframePopup";
 import RoomContainer from "../../organisms/RoomContainer";
-import RoomView from "../../organisms/RoomView";
 
 const RoomViewPage = (props) => {
   const { showButton = true, className = "", onButtonClick } = props;
-  //const [roomData, setRoomData] = useState();
-  //const [designImageProps, setDesignImageProps] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showIframe, setShowIframe] = useState(false);
   let hasOverlayVideo = sessionStorage.getItem("hasOverlayVideo") || false;
