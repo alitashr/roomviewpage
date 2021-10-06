@@ -1,16 +1,3 @@
-// import * as THREE from "three";
-// import { OrbitControls } from "../../../utils/OrbitControls";
-// import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
-// import {
-//   convertArrIntoRad,
-//   convertArrintoDeg,
-//   convertUnit,
-//   areaOfellipse,
-//   createVector,
-//   degToRad
-// } from "../../../utils/utils";
-// import { CanvasTexture, Box3, MeshBasicMaterial } from "three";
-// import { makeUrl } from "../../../utils/utils";
 import * as THREE from "three";
 import { OrbitControls } from "../../../utils/OrbitControls";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
@@ -18,6 +5,7 @@ import { CanvasTexture, Box3, MeshBasicMaterial } from "three";
 import { convertArrintoDeg, convertArrIntoRad, convertUnit, degToRad } from "../../../utils/converter";
 import { areaOfellipse, createVector } from "../../../utils/utils";
 import { makeUrl } from "../../../utils/fileUtils";
+import { assetsFolder } from "../../../constants/constants";
 
 export default class ThreeViewHelper {
   constructor () {
@@ -51,11 +39,6 @@ export default class ThreeViewHelper {
     this.objProps = config[surfaceName];
     this.baseUrl = baseUrl;
     this.roomType = roomType;
-    // if (roomType === "illustrtion") {
-    //   canvas.style.visibility = "hidden"
-    // } else {
-    //   canvas.style.visibility = "inherit"
-    // }
     this.renderer = new THREE.WebGLRenderer({
       canvas,
       preserveDrawingBuffer: true,
@@ -90,7 +73,7 @@ export default class ThreeViewHelper {
       case "illustration":
         return this.setup3dObject();
       default:
-        const loadCarpet = this.setupCarpet({});
+        const loadCarpet = this.setupCarpet({fbxUrl: assetsFolder +'./Assets/rug.fbx'});
         this.removeObjIfExists("floor");
         this.removeObjIfExists("wallpaper");
 
@@ -237,7 +220,7 @@ export default class ThreeViewHelper {
     });
   }
 
-  setupCarpet({ carpetRotation, fbxUrl ='./Assets/rug.fbx' }) {
+  setupCarpet({ carpetRotation, fbxUrl = assetsFolder+ './Assets/rug.fbx' }) {
     this.objConf = this.sceneConfig[this.surfaceName];
     const { position = [0, 0, 0], rotation = [90, 0, 0] } = this.objConf;
     if (this.objectLoaded) {

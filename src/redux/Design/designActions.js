@@ -45,10 +45,17 @@ export const setInitialDesignProps = () => {
     const designDataJSON = getDesignData(initialDesignProps, designPath);
     console.log("return -> designDataJSON", designDataJSON)
     readImageFromUrl(designDataJSON.designImagePath).then((blob) => {
+      console.log("readImageFromUrl -> blob", typeof blob, blob)
+      if(typeof blob !== Blob){
+        dispatch(setDesignName(designDataJSON.designName));
+        dispatch(setDesignImagePath(designDataJSON.designImagePath));
+     
+      }
+      else{
       openFile(blob, (designImagePath) => {
         dispatch(setDesignName(designDataJSON.designName));
         dispatch(setDesignImagePath(designImagePath));
-      });
+      });}
     });
   };
 };

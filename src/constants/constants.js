@@ -1,8 +1,12 @@
-export const assetsFolder = './';//process.env.SERVER !=='local' ? 'https://cdn.explorug.com/explorugentry/roomview/':  './'; //'./'
-console.log("assetsFolder", assetsFolder)
+let publicUrl = process.env.PUBLIC_URL;
+publicUrl = publicUrl ==='' ||publicUrl==='.' ? './': publicUrl;
+publicUrl = publicUrl[publicUrl.length-1]!=='/' ? publicUrl+'/': publicUrl;
+
+export const assetsFolder = publicUrl ;// process.env.PUBLIC_URL==='' || process.env.PUBLIC_URL==='.' ? './': process.env.PUBLIC_URL ;//'https://cdn.explorug.com/explorugentry/roomview/';//process.env.SERVER !=='local' ? 'https://cdn.explorug.com/explorugentry/roomview/':  './'; //'./'
+console.log("assetsFolder", assetsFolder, 'process.env.PUBLIC_URL', process.env.PUBLIC_URL)
 export const defaultRoomdata = {
-  Dir: "Rooms/ARBEITSZIMMER1",
-  Name: "ARBEITSZIMMER1",
+  Dir: "./Rooms/Amber Cabin",
+  Name: "Amber Cabin",
   Files: [
     "Config.json",
     "Shot_1.bg.jpg",

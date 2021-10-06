@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setInitialDesignProps, setDesignName, setDesignImagePath } from '../../../redux/Design/designActions';
 import { fetchBasicRoomDetails } from '../../../redux/Room/roomActions';
 import { preload } from '../../../utils/fileUtils';
-import RoomView from '../RoomView';
+import RoomView from '../RoomView/index test';
 
 const RoomContainer = props => {
   const {className, onRoomRendered} = props;

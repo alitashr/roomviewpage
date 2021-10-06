@@ -9,6 +9,7 @@ import { getDesignList, setFloorOptions } from "../../../redux";
 import DesignlistContainer from "../../organisms/DesignlistContainer";
 import ColorlistContainer from "../../organisms/ColorListContainer";
 import FloorOptionsContainer from "../../organisms/FloorOptionsContainer";
+import { getJsonFromUrl } from "../../../utils/domUtils";
 
 const RoomStudioPage = (props) => {
   const designlist = useSelector((state) => state.designlist);
@@ -42,7 +43,7 @@ const RoomStudioPage = (props) => {
   const onMyroomClick = () => {
     let url = window.urlToOpen;
     url = url.substr(url.indexOf("?"), url.length - 1);
-    const json = window.getJsonFromUrl(url);
+    const json = getJsonFromUrl(url);
     const myRoomUrl = window.getExplorugUrl({ page: json.page, initDesign: json.initdesign, initView: "myroom" });
     window.open(myRoomUrl, "_blank");
   };

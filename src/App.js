@@ -4,6 +4,7 @@ import RoomViewPage from './components/pages/RoomViewPage';
 import RoomStudioPage from './components/pages/RoomStudioPage';
 import { Provider } from 'react-redux';
 import store from './redux/store';
+import BorderRugsPage from './components/pages/BorderRugsPage';
 
 const PageToRender = props=>{
   const template = sessionStorage.getItem("template") ||'roomview';
@@ -12,6 +13,8 @@ const PageToRender = props=>{
       return <RoomStudioPage></RoomStudioPage>
     case "roomview":
       return <RoomViewPage></RoomViewPage>
+      case "borderrugs":
+        return <BorderRugsPage></BorderRugsPage>
     default:
       return <RoomViewPage></RoomViewPage>
       break;
