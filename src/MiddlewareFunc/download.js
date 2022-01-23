@@ -1,4 +1,4 @@
-import RoomViewHelper from "../components/organisms/RoomView/roomviewhelper";
+import RoomViewHelper from "../components/organisms/RoomView-deprecated/roomviewhelper";
 import { createCanvas, downloadImageData } from "../utils/canvasUtils";
 
 export const downloadRendered3dIllNQ = async ({

@@ -2,6 +2,9 @@
 @import './colors';
 @import './color-aliases';
 @import './scrollbars.scss';
+:root {
+ --drop-container-height: 4rem;
+ }
 
 @import "./components/atoms/AtIcon/aticon";
 @import "./components/atoms/AtButton/AtButton";
@@ -10,10 +13,11 @@
 @import "./components/molecules/SwatchContainer/SwatchContainer";
 @import "./components/molecules/PopupContainer/PopupContainer";
 
-
+@import "./components/organisms/ImageDropContainer/ImageDropContainer";
 @import "./components/organisms/ColorListContainer/ColorListContainer";
 @import "./components/organisms/DesignlistContainer/DesignlistContainer";
-@import "./components/organisms/RoomView/RoomView";
+@import "./components/organisms/RoomviewNew/RoomViewNew";
 
 @import "./components/pages/RoomViewPage/RoomViewPage";
 @import "./components/pages/RoomStudioPage/RoomStudioPage";
+@import "./components/pages/BorderRugsPage/BorderRugPage";

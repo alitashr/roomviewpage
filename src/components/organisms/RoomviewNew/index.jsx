@@ -2,23 +2,20 @@ import classNames from "classnames";
 import React, { PropTypes, useEffect, useRef, useState } from "react";
 import { useMount, useWindowSize } from "react-use";
 import { usePrevious } from "../../../hooks";
-import { downloadRendered3dIllHQ, downloadRendered3dIllNQ } from "../../../MiddlewareFunc/download";
-import { createCanvas, downloadImageData } from "../../../utils/canvasUtils";
 import InputCanvas from "../../molecules/InputCanvas";
 import RoomViewHelper from "./roomviewhelper";
-import { getRenderedDesign } from "../../../api/appProvider";
+import { getRenderedBorderRug, getRenderedDesign } from "../../../api/appProvider";
 import { getDominantColor } from "../../../utils/colorUtils";
 
 let roomViewHelper = new RoomViewHelper();
 let designRendered = false;
 let designRendering = false;
 
-
-const RoomView = (props) => {
+const RoomViewNew = (props) => {
   const { roomData, designImageProps, onRendered, onRoomLoaded, className = "" } = props;
-  const { Name: roomName, Dir: dir, Files, baseUrl, config, activeFloor, floorOptions } = roomData;
+  const { roomDetails, activeFloor, floorOptions } = roomData;
+  const { Name: roomName, Dir: dir, Files, baseUrl, config} = roomDetails;
   const { designImagePath, designName, designDetails, fullpath } = designImageProps;
-
   const containerRef = useRef(null);
   const bgCanvasRef = useRef(null);
   const threeCanvasRef = useRef(null);
@@ -44,8 +41,7 @@ const RoomView = (props) => {
   }, [windowSize]);
 
   useMount(() => {
-    roomViewHelper.initFlags({});
-    
+
     const canvasConfig = {
       bgCanvas: bgCanvasRef.current,
       threeCanvas: threeCanvasRef.current,
@@ -54,10 +50,15 @@ const RoomView = (props) => {
       container: containerRef.current,
       inputCanvas: inputCanvasRef.current,
       transitionCanvas: transitionCanvasRef.current,
-      bgVideo: videoRef.current
+      bgVideo: videoRef.current,
     };
     roomViewHelper.initCanvas(canvasConfig);
   });
+
+  useEffect(() => {
+    roomViewHelper.resize(windowSize);
+  }, [windowSize]);
+
   useEffect(() => {
     if (!activeFloor) return;
     //if (isRendering || !activeFloor || designDetailState.loading) return;
@@ -71,13 +72,15 @@ const RoomView = (props) => {
     };
     updateFloor();
   }, [activeFloor]);
+
+
   const renderFloorInRoom = (activeFloor) => {
     if (!floorOptions) return Promise.resolve();
     const floor = activeFloor && activeFloor.path ? activeFloor : floorOptions.activeFloor;
     return roomViewHelper.renderFloor(floor);
   };
-   
-  const renderDesign= async()=>{
+
+  const renderDesign = async () => {
     if (typeof designImagePath === "string") {
       await roomViewHelper.renderDesignFromCustomUrl({
         customUrl: designImagePath,
@@ -86,97 +89,13 @@ const RoomView = (props) => {
     } else {
       await roomViewHelper.renderFromJpg({ designImage: designImagePath });
     }
-  }
-
-
-  // useEffect(() => {
-  //   let la = true;
-   
-
-  //   const loadRoom = async () => {
-  //     try {
-  //       console.log('load room')
-  //       //if room has been changed
-  //       if (prevRoomDetails !== roomData) {
-  //         roomViewHelper.makeTransitionCanvas();
-  //         if (!Files.length) return;
-  //         const files = Files.map((file) => (file[0] === "/" ? file : "/" + file));
-  //         await Promise.all(roomViewHelper.initConfig({ baseUrl, config, files }));
-  //         if (!la) return;
-  //         const dominantColorHex = getDominantColor(designDetails);
-  //         roomViewHelper.updateBackground({ dominantColorHex });
-  //         roomViewHelper.updateShadow({ clear: true });
-  //         roomViewHelper.updateMask();
-          
-  //         onRoomLoaded();
-  //         if (prevDesignImagePath === designImagePath) {
-  //           await roomViewHelper.updatethreeCanvas();
-  //           if (!la) return;
-  //           if (
-  //             (!designRendering && !designRendered)) {
-  //               designRendering = true;
-  //               await renderDesign()
-  //           } 
-  //           roomViewHelper.updateShadow();
-  //           await renderFloorInRoom(activeFloor);
-  //           if (!la) return;
-  //         }
-  //       } else {
-  //         onRoomLoaded();
-  //       }
-  //       if (prevDesignImagePath !== designImagePath) {
-  //         await roomViewHelper.updatethreeCanvas();
-  //       await renderDesign();
-  //         onRendered();
-          
-  //         roomViewHelper.updateShadow();
-  //       } 
-  //       else if (prevDesignDetails !== designDetails) {
-  //         if (roomViewHelper.patchImage) {
-  //           const dominantColorHex = getDominantColor(designDetails);
-  //           roomViewHelper.updateBackground({ dominantColorHex });
-  //           roomViewHelper.updateMask();
-  //         }
-  //         designRendered = false;
-  //         designRendering = false;
-  //         //await setRoomTileDetails();
-  //         await roomViewHelper.updatethreeCanvas();
-  //         if (!la) return;
-  //          designRendering = true
-  //         const renderedDesignImage = await getRenderedDesign({
-  //           designDetails: designDetails,
-  //           fullpath,
-  //           zoom: 1,
-  //           applyKLRatio: false,
-  //         });
-  //         roomViewHelper.renderImage({ image: renderedDesignImage });
-  //         await renderFloorInRoom(activeFloor);
-
-  //         designRendered = true;
-  //           designRendering = false;
-  //       } else {
-  //         onRendered();
-  //       }
-  //       roomViewHelper.updateShadow();
-  //       await roomViewHelper.makeTransitionCanvas({ clear: true });
-     
-
-  //     } catch (error) {
-  //       console.error(error);
-  //       return;
-  //     }
-  //   };
-  //   loadRoom();
-  //   return () => {
-  //     la = false;
-  //   };
-  // }, [roomData]);
+  };
 
   useEffect(() => {
     let la = true;
     const loadRoom = async () => {
       try {
-        console.log('load room')
+        console.log("load room");
         //if room has been changed
         if (prevRoomDetails !== roomData) {
           roomViewHelper.makeTransitionCanvas();
@@ -188,7 +107,7 @@ const RoomView = (props) => {
           roomViewHelper.updateBackground({ dominantColorHex });
           roomViewHelper.updateShadow({ clear: true });
           roomViewHelper.updateMask();
-          
+
           onRoomLoaded();
         } else {
           onRoomLoaded();
@@ -201,25 +120,35 @@ const RoomView = (props) => {
         return;
       }
     };
+   // const { Files: files, baseUrl, config } = roomDetails;
+    
+  const { Dir: dir, Files, baseUrl, config} = roomData.roomDetails;
+     if(!Files.length || !baseUrl || !config) return;
+     console.log(roomData);
+   
     loadRoom();
     return () => {
       la = false;
     };
   }, [roomData]);
-  
+
   useEffect(() => {
     let la = true;
     const loadDesign = async () => {
       try {
-        console.log('load Design')
         //if room has been changed
-        if (prevDesignImagePath !== designImagePath) {
+        if (prevDesignImagePath !== designImagePath && designImagePath !== "") {
+          console.log("load Design designImagePath changed");
+          roomViewHelper.makeTransitionCanvas();
+
           await roomViewHelper.updatethreeCanvas();
-        await renderDesign();
-          onRendered();
+          await renderDesign();
           roomViewHelper.updateShadow();
-        } 
-        else if (prevDesignDetails !== designDetails) {
+          onRendered();
+          
+        } else if (prevDesignDetails !== designDetails) {
+          console.log("prevDesignDetails", prevDesignDetails, designDetails);
+
           if (roomViewHelper.patchImage) {
             const dominantColorHex = getDominantColor(designDetails);
             roomViewHelper.updateBackground({ dominantColorHex });
@@ -230,20 +159,31 @@ const RoomView = (props) => {
           //await setRoomTileDetails();
           await roomViewHelper.updatethreeCanvas();
           if (!la) return;
-          designRendering = true
+          designRendering = true;
+          // populaate design canvas here
           const renderedDesignImage = await getRenderedDesign({
             designDetails: designDetails,
             fullpath,
             zoom: 1,
             applyKLRatio: false,
           });
+          // const renderedBorderRug = await getRenderedBorderRug({
+          //   borderImgUrl: "./Designs/borderrugs/RM-734 S.jpg",
+          //   borderWidth: 1,
+          //   centerPatternImgUrl: "./Designs/borderrugs/RM-720 S.jpg",
+          //   designDetails: designDetails,
+          //   fullpath,
+          //   zoom: 1,
+          //   applyKLRatio: false,
+          // });
+          // roomViewHelper.renderImage({ image: renderedDesignImage });
           roomViewHelper.renderImage({ image: renderedDesignImage });
           await renderFloorInRoom(activeFloor);
 
           designRendered = true;
-            designRendering = false;
+          designRendering = false;
         } else {
-          onRendered();
+         // onRendered();
         }
         roomViewHelper.updateShadow();
         await roomViewHelper.makeTransitionCanvas({ clear: true });
@@ -252,7 +192,11 @@ const RoomView = (props) => {
         return;
       }
     };
-    loadDesign();
+    //console.log(designImageProps)
+    if(designImageProps.designImagePath){
+      console.log('load design ',designImageProps)
+      loadDesign();
+    }
     return () => {
       la = false;
     };
@@ -274,14 +218,25 @@ const RoomView = (props) => {
         <canvas className="canvas bgCanvas" ref={bgCanvasRef} style={{ zIndex: 1, pointerEvents: "none" }} />
         <canvas className="canvas threeCanvas" ref={threeCanvasRef} style={{ zIndex: 2, pointerEvents: "all" }} />
         <canvas className="canvas maskCanvas" ref={maskCanvasRef} style={{ zIndex: 3, pointerEvents: "none" }} />
-        
-      <video className={classNames("video", {show: config.backgroundVideo})} width="100%" height="100%" loop muted autoPlay playsInline
-        ref={videoRef}
 
-        //style={{ opacity: config.backgroundVideo? 1:0}}
-      />
+        <video
+          className={classNames("video", { show: config.backgroundVideo })}
+          width="100%"
+          height="100%"
+          loop
+          muted
+          autoPlay
+          playsInline
+          ref={videoRef}
+
+          //style={{ opacity: config.backgroundVideo? 1:0}}
+        />
         <canvas className="canvas shadowCanvas" ref={shadowCanvasRef} style={{ zIndex: 4, pointerEvents: "none" }} />
-        <canvas className="canvas transitionCanvas" ref={transitionCanvasRef} style={{ zIndex: 5, pointerEvents: "none" }} />
+        <canvas
+          className="canvas transitionCanvas"
+          ref={transitionCanvasRef}
+          style={{ zIndex: 5, pointerEvents: "none" }}
+        />
         <InputCanvas
           zIndex={50}
           pointerEvent
@@ -295,6 +250,6 @@ const RoomView = (props) => {
   );
 };
 
-RoomView.propTypes = {};
+RoomViewNew.propTypes = {};
 
-export default RoomView;
+export default RoomViewNew;

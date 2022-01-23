@@ -26,11 +26,12 @@ const RoomStudioPage = (props) => {
 
     autoLogin().then((key) => {
       if (key.Key && key.Key !== "") {
-        dispatch(getDesignList());
+        dispatch(getDesignList({}));
         //get flags
       }
     });
   });
+  
   useEffect(()=>{
     getFloor().then(floors=>{
       dispatch(setFloorOptions(floors))

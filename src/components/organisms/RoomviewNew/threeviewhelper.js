@@ -7,8 +7,10 @@ import { areaOfellipse, createVector } from "../../../utils/utils";
 import { makeUrl } from "../../../utils/fileUtils";
 import { assetsFolder } from "../../../constants/constants";
 
+import { CDN_domain } from "../../../api/appProvider";
+
 export default class ThreeViewHelper {
-  constructor () {
+  constructor() {
     this.scene = new THREE.Scene();
 
     this.textureLoader = new THREE.TextureLoader();
@@ -39,6 +41,11 @@ export default class ThreeViewHelper {
     this.objProps = config[surfaceName];
     this.baseUrl = baseUrl;
     this.roomType = roomType;
+    // if (roomType === "illustrtion") {
+    //   canvas.style.visibility = "hidden"
+    // } else {
+    //   canvas.style.visibility = "inherit"
+    // }
     this.renderer = new THREE.WebGLRenderer({
       canvas,
       preserveDrawingBuffer: true,
@@ -68,12 +75,13 @@ export default class ThreeViewHelper {
     if (this.directionalLight) this.scene.remove(this.directionalLight);
     if (this.ambientLight) this.scene.remove(this.ambientLight);
   }
-  setupSceneObjects({ carpetRotation }) {
+  setupSceneObjects({ carpetRotation, fbxUrl}) {
+    console.log("setupSceneObjects -> carpetRotation, fbxUrl", carpetRotation, fbxUrl)
     switch (this.roomType) {
       case "illustration":
         return this.setup3dObject();
       default:
-        const loadCarpet = this.setupCarpet({fbxUrl: assetsFolder +'./Assets/rug.fbx'});
+        const loadCarpet = this.setupCarpet({fbxUrl});
         this.removeObjIfExists("floor");
         this.removeObjIfExists("wallpaper");
 
@@ -91,6 +99,7 @@ export default class ThreeViewHelper {
             promiseArr.push(loadWallpaper);
           }
         }
+
         return Promise.all(promiseArr);
     }
   }
@@ -220,7 +229,8 @@ export default class ThreeViewHelper {
     });
   }
 
-  setupCarpet({ carpetRotation, fbxUrl = assetsFolder+ './Assets/rug.fbx' }) {
+  setupCarpet({ carpetRotation, fbxUrl }) {
+    fbxUrl = fbxUrl ? fbxUrl: CDN_domain + "v3assets/rug.fbx";
     this.objConf = this.sceneConfig[this.surfaceName];
     const { position = [0, 0, 0], rotation = [90, 0, 0] } = this.objConf;
     if (this.objectLoaded) {
@@ -273,18 +283,42 @@ export default class ThreeViewHelper {
         }
       }
       if (!this.carpetLoaded) {
-        this.fbxLoader.load(
-          fbxUrl,
-          obj => {
-            this.carpetMesh = obj.getObjectByName(this.surfaceName);
-            this.scene.add(this.carpetMesh);
-            this.setupLights();
-            setup();
-          },
-          undefined,
-          console.error
-        );
+        const onFbxLoad = obj => {
+          this.carpetMesh = obj.getObjectByName(this.surfaceName);
+          this.scene.add(this.carpetMesh);
+          this.setupLights();
+          setup();
+        };
+        this.loadfbx(fbxUrl)
+          .then(obj => {
+            onFbxLoad(obj);
+          })
+          .catch(err => {
+            console.error("fbx load -> err", err);
+            const fbxUrl_ = 'v3assets/'+fbxUrl.split('/').pop();
+            this.loadfbx(fbxUrl_)
+              .then(obj => {
+                onFbxLoad(obj);
+              })
+              .catch(err => {
+                console.error("error on fbx load -> err", err);
+              });
+          });
       } else setup();
+    });
+  }
+  loadfbx(fbxUrl) {
+    return new Promise((resolve, reject) => {
+      this.fbxLoader.load(
+        fbxUrl,
+        obj => {
+          resolve(obj);
+        },
+        undefined,
+        err => {
+          reject(err);
+        }
+      );
     });
   }
   changedIntensity() {
@@ -340,7 +374,7 @@ export default class ThreeViewHelper {
 
       wid = this.roomDims.width;
       hgt = this.roomDims.height;
-    }
+    }    
     //set carpet scale according to design details or specific ratio
     this.carpetMesh.scale.set(wid / fact, hgt / fact, IsIrregular ? 0.01 : 2 / fact);
   }
@@ -405,19 +439,24 @@ export default class ThreeViewHelper {
   setCarpetTexture({ designDetails, designCanvas, normapCanvas }) {
     const designTexture = new CanvasTexture(designCanvas);
     const normalTexture = new CanvasTexture(normapCanvas);
-    designTexture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
-    normalTexture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
-    designTexture.wrapS = designTexture.wrapT = THREE.RepeatWrapping;
-    normalTexture.wrapS = normalTexture.wrapT = THREE.RepeatWrapping;
-    designTexture.generateMipmaps = false;
-    designTexture.minFilter = THREE.LinearFilter;
-    designTexture.magFilter = THREE.LinearFilter;
-    
-    if (window.flags && window.flags.visualizations?.textureWrapType === "clampToEdge") {
-      designTexture.wrapS = designTexture.wrapT = THREE.ClampToEdgeWrapping;
-      normalTexture.wrapS = normalTexture.wrapT = THREE.ClampToEdgeWrapping;
+    if (window.InterfaceElements.IsJpeg && window.flags.visualizations?.applyLinearFilter) {
+      designTexture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+      normalTexture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+      designTexture.wrapS = designTexture.wrapT = THREE.RepeatWrapping;
+      normalTexture.wrapS = normalTexture.wrapT = THREE.RepeatWrapping;
+      designTexture.generateMipmaps = false;
+      designTexture.minFilter = THREE.LinearFilter;
+      designTexture.magFilter = THREE.LinearFilter;
+      if (window.flags.visualizations?.textureWrapType === "clampToEdge") {
+        designTexture.wrapS = designTexture.wrapT = THREE.ClampToEdgeWrapping;
+        normalTexture.wrapS = normalTexture.wrapT = THREE.ClampToEdgeWrapping;
+      }
+    } else {
+      designTexture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+      normalTexture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+      designTexture.wrapS = designTexture.wrapT = THREE.RepeatWrapping;
+      normalTexture.wrapS = normalTexture.wrapT = THREE.RepeatWrapping;
     }
-
     const surfaceUnit = "ft";
     const PhysicalWidth = convertUnit(designDetails.Unit, surfaceUnit, designDetails.PhysicalWidth);
     const PhysicalHeight = convertUnit(
@@ -426,27 +465,7 @@ export default class ThreeViewHelper {
       designDetails.PhysicalHeight
     );
     this.designDetails = { ...designDetails, PhysicalHeight, PhysicalWidth, Unit: surfaceUnit };
-
-    if (window.InterfaceElements && window.InterfaceElements.IsWallToWall) {
-      let repeat = [this.roomDims.width / PhysicalWidth,
-      this.roomDims.height / PhysicalHeight];
-      let offsetX = 0;
-      let offsetY = 0;
-    
-      if (window.flags && window.flags.visualizations?.wallToWallCenterRepeat?.x) {
-        let halfRepeatX = repeat[0] / 2;
-        offsetX = 0.5 - (halfRepeatX - Math.floor(halfRepeatX)); //offset to center the tile center as canvas center horizontally
-      }
-      if (window.flags && window.flags.visualizations?.wallToWallCenterRepeat?.y) {
-        let halfRepeatY = repeat[0] / 2;
-        offsetY = 0.5 - (halfRepeatY - Math.floor(halfRepeatY)); //offset to center the tile center as canvas center vertically
-      }
-      designTexture.offset.fromArray([offsetX, offsetY]);
-      designTexture.repeat.fromArray([
-        repeat[0],
-        repeat[1],
-      ]);
-    }
+    this.updateCarpetRepeatWallToWall({designTexture});
     const { normalScale = [1, 1] } = this.sceneConfig;
     const normalScaleVec = new THREE.Vector2(...normalScale);
     this.material = new THREE.MeshStandardMaterial({
@@ -464,6 +483,24 @@ export default class ThreeViewHelper {
     this.carpetMesh.material.needsUpdate = true;
     this.setCarpetScale(this.designDetails);
     this.render();
+  }
+  updateCarpetRepeatWallToWall(options = {}) {
+    const { designTexture = this.carpetMesh.material.map } = options;
+    if (window.InterfaceElements.IsWallToWall) {
+      let repeat = [this.roomDims.width / this.designDetails.PhysicalWidth, this.roomDims.height / this.designDetails.PhysicalHeight];
+      let offsetX = 0;
+      let offsetY = 0;
+      if (window.flags.visualizations?.wallToWallCenterRepeat?.x) {
+        let halfRepeatX = repeat[0] / 2;
+        offsetX = 0.5 - (halfRepeatX - Math.floor(halfRepeatX)); //offset to center the tile center as canvas center horizontally
+      }
+      if (window.flags.visualizations?.wallToWallCenterRepeat?.y) {
+        let halfRepeatY = repeat[0] / 2;
+        offsetY = 0.5 - (halfRepeatY - Math.floor(halfRepeatY)); //offset to center the tile center as canvas center vertically
+      }
+      designTexture.offset.fromArray([offsetX, offsetY]);
+      designTexture.repeat.fromArray([repeat[0], repeat[1]]);
+    }
   }
   setFloorTexture({ floorCanvas }) {
     if (!this.floor || !this.floor.material || !this.renderer) return;
@@ -484,7 +521,7 @@ export default class ThreeViewHelper {
     if (!this.wallpaper || !this.wallpaper.material || !this.renderer) return;
     this.wallpaperDims = dims;
     const wallpaperConfig = this.sceneConfig[this.wallpaper.name];
-    const { unit, surfaceSize } = wallpaperConfig;
+    const { surfaceSize } = wallpaperConfig;
 
     if (!this.wallpaper.material.map) {
       this.wallpaper.material.color.set("white");
@@ -511,8 +548,10 @@ export default class ThreeViewHelper {
   }
 
   changeFloorVisibility(visible) {
-    if(this.floor){ this.floor.visible = visible;
-    this.render();}
+    if (this.floor) {
+      this.floor.visible = visible;
+      this.render();
+    }
   }
 
   changeWallpaperVisibility(visible) {
@@ -562,7 +601,6 @@ export default class ThreeViewHelper {
     return intersects[0];
   }
   raycastMouseOnSurface(e) {
-    if(!e) return null; 
     const { x, y } = e;
     let { mouseX, mouseY } = this.convMouseCord(x, y);
     var mouse = new THREE.Vector3(mouseX, mouseY, 0.99);
@@ -660,7 +698,7 @@ export default class ThreeViewHelper {
     const b = a.map(vertex => createVector(vertex, this.camera, this.w, this.h));
     return [b[0], b[1], b[3], b[2]];
   }
-  getCarpetArea() { }
+  getCarpetArea() {}
   getCarpetMask() {
     const object = this.carpetMesh.clone();
     const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -813,7 +851,7 @@ const perspectiveCamera = (config = {}) => {
   camera.rotation.set(...convertArrIntoRad(rotation));
   return camera;
 };
-const addOrbitControl = function (renderer, scene, camera, config = {}) {
+const addOrbitControl = function(renderer, scene, camera, config = {}) {
   let { target = [0, 0, 0] } = config;
   const control = new OrbitControls(camera, renderer.domElement);
   control.enableKeys = false;

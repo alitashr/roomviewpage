@@ -60,3 +60,11 @@ export function resizeKeepingAspect(image, container, fitType = "fit_inside", re
   height = height * resolution;
   return { width, height };
 }
+
+export const getFilename = (name) => {
+  var prefix = name.substr(0, name.lastIndexOf("."));
+  var ext = name.substr(name.lastIndexOf("."), name.length);
+  var randomNum = Math.round(Math.random(100) * 100000);
+  let filename = prefix + "-" + randomNum + ext;
+  return filename;
+};

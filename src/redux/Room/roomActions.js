@@ -1,5 +1,4 @@
 import { assetsFolder, defaultRoomdata } from "../../constants/constants";
-import { config2Point1 } from "../../MiddlewareFunc/ConfigMatcher";
 import { getRoomData } from "../../MiddlewareFunc/getInfo";
 import { readJSON } from "../../utils/fileUtils";
 
@@ -52,11 +51,9 @@ export const fetchBasicRoomDetails = () => {
   return (dispatch) => {
     let roomPath = sessionStorage.getItem("initview") || "";
     const roomDataJSON = getRoomData(defaultRoomdata, roomPath);
-    dispatch(setRoomBasicDetails(roomDataJSON));
     const baseUrl = assetsFolder + roomDataJSON.Dir;
     
     readJSON(`${baseUrl}/config.json`).then(async (config) => {
-      console.log("readJSON -> config", config)
       const name = roomDataJSON.Name || "";
       let roomData = { ...roomDataJSON, config, baseUrl };
 
@@ -66,8 +63,9 @@ export const fetchBasicRoomDetails = () => {
       // } else {
       //   dispatch(setRoomConfig(config));
       // }
+      
+      dispatch(setRoomBasicDetails(roomDataJSON));
       dispatch(setRoomConfig(config));
-     
       dispatch(setRoomBaseUrl(baseUrl));
 
       // const defaultFloorOption = {

@@ -32,7 +32,6 @@ const PopupContainer = (props) => {
     if (onClose) onClose();
   };
   useEffect(() => {
-    //console.log("iframeUrl", iframeUrl, "previousIframeUrl", previousIframeUrl);
     setIframeLoaded(false);
   }, [iframeUrl]);
 

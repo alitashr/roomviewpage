@@ -1,0 +1,56 @@
+#imageDropContainer {
+  position: absolute;
+  height: var(--drop-container-height);
+  text-align: center;
+  bottom: 1rem;
+  left: 2rem;
+  border: 2px dashed #ccc;
+  border-radius: 0.5rem;
+  width: 26rem;
+  font-family: sans-serif;
+  background: rgba(255, 255, 255, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  margin: auto;
+  right: 0;
+  max-width: 40vw;
+  cursor: pointer;
+  z-index: 999;
+}
+#imageDropContainer.highlight {
+  border-color: var(--active-color);
+}
+.inputArea {
+  width: 80%;
+}
+div#inputSubmit {
+  border: 1px solid;
+  border-radius: 0.25rem;
+  height: 26px;
+  line-height: 26px;
+  cursor: pointer;
+}
+
+#customFile {
+  display: none;
+}
+
+.custom-file-label {
+  cursor: pointer;
+  color: #333;
+  font-size: 1.2em;
+}
+div#errorMessage {
+  font-size: 0.75em;
+  color: #555;
+}
+#uploadMessage {
+  font-size: 15px;
+  color: #555;
+  font-weight: 400;
+}
+.custom-file-title {
+  text-transform: uppercase;
+  font-weight: 400;
+}

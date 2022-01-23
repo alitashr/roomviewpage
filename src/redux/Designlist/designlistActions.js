@@ -22,7 +22,7 @@ const selectDesign = (payload) => {
   };
 };
 
-export const getDesignList = (initDesignPath='Designs/Artwork/Assorted Design/Thornure.ctf') => {
+export const getDesignList = ({initDesignPath='Designs/Artwork/Assorted Design/Thornure.ctf'}) => {
   return (dispatch) => {
     fetchDesignList({ struct: true }).then((nestedDesignList) => {
       const {
@@ -66,6 +66,18 @@ export const onDesignThumbnailClick = (node, index, activeVariation) => {
     dispatch(
       selectDesign({
         selectedFile: node,
+        activeVariation: activeVariation,
+      })
+    );
+  };
+};
+
+export const selectThisDesign = (selectedFile, activeVariation) => {
+ 
+  return (dispatch) => {
+    dispatch(
+      selectDesign({
+        selectedFile: selectedFile,
         activeVariation: activeVariation,
       })
     );

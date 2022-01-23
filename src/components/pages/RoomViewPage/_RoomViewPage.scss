@@ -1,4 +1,4 @@
-.at-roomview-container{
+.at-roomview-container {
   position: absolute;
   top: 0;
   width: 100%;
@@ -25,15 +25,16 @@
   background: $pt-intent-primary;
   border-color: $pt-intent-primary;
   position: absolute;
-  right: 15rem;
-  bottom: 4rem;
+  right: 3rem;
+  bottom: 2rem;
   z-index: 100;
   min-width: 14rem;
   border-radius: 0.25rem;
   height: 3rem;
   color: var(--text-primary-active);
 }
-.at-entrypoint-roomview-btn:hover, .at-entrypoint-roomview-btn:focus {
+.at-entrypoint-roomview-btn:hover,
+.at-entrypoint-roomview-btn:focus {
   color: var(--text-primary-active);
   background: var(--brand4);
   border-color: var(--brand4);
@@ -46,7 +47,7 @@
   display: flex;
   bottom: 0;
   pointer-events: none;
-  &.outdoor-plutith-clip{
+  &.outdoor-plutith-clip {
     z-index: 10;
     clip-path: polygon(0% 0, 100% 0%, 100% 53.7%, 0 53.7%);
   }
@@ -55,9 +56,9 @@
 video.object-fit {
   width: 100%;
 }
-@media screen and (max-width:1200px) {
+@media screen and (max-width: 1200px) {
   .at-entrypoint-roomview-btn {
-    bottom: 2rem;
+    bottom: 6rem;
     height: 2rem;
     line-height: 1rem;
     min-width: auto;
@@ -66,13 +67,12 @@ video.object-fit {
     right: 0;
     left: 50%;
     transform: translateX(-50%);
+  }
 }
-}
-@media screen and (max-width:800px) {
+@media screen and (max-width: 800px) {
   .at-entrypoint-roomview-btn {
-  
     right: 3rem;
     transform: none;
     left: auto;
-}
+  }
 }

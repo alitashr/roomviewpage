@@ -25,7 +25,7 @@ const InputCanvas = (props, ref) => {
             e.stopPropagation();
         }
         setMouseDown(false);
-        if (onEnd) onEnd();
+        if (onEnd) onEnd(e);
     };
 
     function getlocation(event, rect) {

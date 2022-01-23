@@ -14,7 +14,7 @@ export const designActions = {
   SET_FULLPATH
 };
 
-const setDesignName = (name) => {
+export const setDesignName = (name) => {
   return {
     type: SET_DESIGN_NAME,
     payload: name,
@@ -45,7 +45,6 @@ export const setInitialDesignProps = () => {
     const designDataJSON = getDesignData(initialDesignProps, designPath);
     console.log("return -> designDataJSON", designDataJSON)
     readImageFromUrl(designDataJSON.designImagePath).then((blob) => {
-      console.log("readImageFromUrl -> blob", typeof blob, blob)
       if(typeof blob !== Blob){
         dispatch(setDesignName(designDataJSON.designName));
         dispatch(setDesignImagePath(designDataJSON.designImagePath));
@@ -67,3 +66,33 @@ export const setDesignDetails =({name, fullpath,designProps})=>{
     if(designProps)  dispatch(setDesign_Details(designProps))
   }
 }
+
+export const changeRugPhySize = (state, payload) => {
+  return (dispatch)=>{
+  const widRatio = state.designDetails.Width / state.designDetails.PhysicalWidth;
+  const hgtRatio = state.designDetails.Height / state.designDetails.PhysicalHeight;
+  const PhysicalWidth = payload.PhysicalWidth
+    ? payload.PhysicalWidth
+    : state.designDetails.PhysicalWidth;
+  const PhysicalHeight = payload.PhysicalHeight
+    ? payload.PhysicalHeight
+    : state.designDetails.PhysicalHeight;
+  const Width = Math.round(PhysicalWidth * widRatio);
+  const Height = Math.round(PhysicalHeight * hgtRatio);
+  const designDetails = {
+    ...state.designDetails,
+    PhysicalWidth,
+    Width,
+    Height,
+    PhysicalHeight
+  };
+
+  const finalstate =  {
+    ...state,
+    designDetails
+  };
+  // console.log("changeRugPhySize -> finalstate", finalstate)
+  dispatch(setDesign_Details(designDetails))
+}
+  //return finalstate;
+};
