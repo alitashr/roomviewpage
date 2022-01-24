@@ -364,10 +364,6 @@ export const getRenderedBorderRug = async ({
             tilepoints.push({ x, y, z: zoom, name: convertTilePointToName(x, y) });
           }
         }
-        console.log("returnnewPromise -> tilepoints", tilepoints);
-
-        //const context = canvas.getContext("2d");
-
         let tileImagesLoaded = 0;
         tilepoints.forEach((tilePoint, index) => {
           const img = document.createElement("img");
@@ -427,33 +423,12 @@ export const getRenderedBorderRug = async ({
       }
     });
 
-    //   let centerCanvasPhyWidth = PhysicalWidth - borderWidth *2;
-    //   let centerCanvasPhyHeight = PhysicalHeight - borderWidth *2;
-    //   let centerCanvasWid = centerCanvasPhyWidth * Width/PhysicalWidth;
-    //   let centerCanvasHgt = centerCanvasPhyHeight * Height/PhysicalHeight;
-
-    //   centerCanvasWid = centerCanvasWid * zoom;
-    //   centerCanvasHgt = centerCanvasHgt * zoom;
-    //   if (!applyKLRatio) KLRatio = 1;
-    //   let centerCanvas = createCanvas(centerCanvasWid, centerCanvasHgt * KLRatio);
-    //   const centerCanvascontext = centerCanvas.getContext("2d");
-    // centerCanvas = drawRepeatImgInCanvas({canvas:centerCanvas, context: centerCanvascontext,zoom, imgUrltoRepeat: centerPatternImgUrl});
-
-    //   const startx = (canvasWidth-centerCanvasWid)/2;
-    //   const starty = (canvasHeight-centerCanvasHgt)/2;
-    //   const finalCanvasContext = canvas.getContext("2d");
-    // finalCanvasContext.drawImage(centerCanvascontext, startx, starty, centerCanvasWid, centerCanvasHgt);
-
-    // resolve(canvas);
-
     const drawSingleTileInDesignCanvas = (index, tilepoints, context) => {
       const tilepoint = tilepoints[index];
       const startX = tilepoint.x * tileSize;
       const startY = tilepoint.y * tileSize * KLRatio;
       context.drawImage(tilepoint.image, startX, startY, tilepoint.image.width, tilepoint.image.height * KLRatio);
     };
-    //});
-
     const drawWaterMarkIfNeeded = async (canvas, canvasWidth, canvasHeight, context) => {
       return new Promise((resolve, reject) => {
         const { hasWatermark = false, logoUrl, width: watWid, opacity, position } = watermarkOptions;
@@ -464,13 +439,11 @@ export const getRenderedBorderRug = async ({
         readImageFromUrl(logoUrl).then((logoImage) => {
           const width = watWid * 3 * zoom;
           const height = (logoImage.height * width) / logoImage.width;
-
           let padding = 15;
           const padx = position[1] === 0.0 ? -padding : position[1] === 1.0 ? padding : 0;
           const pady = position[0] === 0.0 ? -padding : position[0] === 1.0 ? padding : 0;
           const startx = position[1] * (canvasWidth - width) - padx;
           const starty = position[0] * (canvasHeight - height) - pady;
-
           context.globalAlpha = opacity;
           context.drawImage(logoImage, startx, starty, width, height);
           //return canvas
@@ -518,9 +491,7 @@ export const uploadRoomviewBlob = ({ blob, filename }) => {
   const data = new FormData();
   data.append("file", blob);
   data.append("filename", filename);
-  
   return new Promise((resolve, reject) => {
-
     let numtries = 0;
     function post() {
       return HttpClient.post(s3ServerRoomViewBucketUrl, data)
@@ -537,7 +508,6 @@ export const uploadRoomviewBlob = ({ blob, filename }) => {
           }
         })
         .catch((err) => {
-
             reject(err);if (numtries < 5) {
               numtries++;
               post();

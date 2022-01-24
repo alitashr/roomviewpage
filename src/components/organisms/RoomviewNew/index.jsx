@@ -4,7 +4,7 @@ import { useMount, useWindowSize } from "react-use";
 import { usePrevious } from "../../../hooks";
 import InputCanvas from "../../molecules/InputCanvas";
 import RoomViewHelper from "./roomviewhelper";
-import { getRenderedBorderRug, getRenderedDesign } from "../../../api/appProvider";
+import { getRenderedDesign } from "../../../api/appProvider";
 import { getDominantColor } from "../../../utils/colorUtils";
 
 let roomViewHelper = new RoomViewHelper();
