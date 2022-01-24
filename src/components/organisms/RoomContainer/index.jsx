@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import React from 'react';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setInitialDesignProps, setDesignImagePath } from '../../../redux/Design/designActions';
+import { setInitialDesignProps } from '../../../redux/Design/designActions';
 import { fetchBasicRoomDetails } from '../../../redux/Room/roomActions';
 import { preload } from '../../../utils/fileUtils';
 import RoomViewNew from '../RoomviewNew';

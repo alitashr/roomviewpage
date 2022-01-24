@@ -12,7 +12,7 @@ import ExplorugIframePopup from "../../organisms/ExplorugIframePopup";
 import ImageDropContainer from "../../organisms/ImageDropContainer";
 import RoomContainer from "../../organisms/RoomContainer";
 
-import {setDesignImage } from "../../../redux/Design/designActions";
+import {changeCurrentDesignImage } from "../../../redux/Design/designActions";
 import { canvasToBlobPromise, createCanvas } from "../../../utils/canvasUtils";
 
 const RoomViewPage = (props) => {
@@ -98,7 +98,7 @@ const RoomViewPage = (props) => {
       let filename = getFilename(imageFile.name);
       let fileType = imageFile.type;
       myImage.onload = function (ev) {
-        dispatch(setDesignImage(myImage));
+        dispatch(changeCurrentDesignImage(myImage));
 
         console.timeLog();
 

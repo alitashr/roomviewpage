@@ -15,7 +15,7 @@ const RoomViewNew = (props) => {
   const { roomData, designImageProps, onRendered, onRoomLoaded, className = "" } = props;
   const { roomDetails, activeFloor, floorOptions } = roomData;
   const { Name: roomName, Dir: dir, Files, baseUrl, config} = roomDetails;
-  const { designImagePath, designName, designDetails, fullpath } = designImageProps;
+  const { designDetails, fullpath } = designImageProps;
   const containerRef = useRef(null);
   const bgCanvasRef = useRef(null);
   const threeCanvasRef = useRef(null);
@@ -26,7 +26,7 @@ const RoomViewNew = (props) => {
   const videoRef = useRef();
 
   const prevRoomDetails = usePrevious(roomData);
-  const prevDesignImagePath = usePrevious(designImagePath);
+  const prevfullpath = usePrevious(fullpath);
   const prevDesignDetails = usePrevious(designDetails);
   const windowSize = useWindowSize();
   const [isDownloading, setIsDownloading] = useState(false);
@@ -81,13 +81,11 @@ const RoomViewNew = (props) => {
   };
 
   const renderDesign = async () => {
-    if (typeof designImagePath === "string") {
+    if (typeof fullpath === "string") {
       await roomViewHelper.renderDesignFromCustomUrl({
-        customUrl: designImagePath,
+        customUrl: fullpath,
       });
       await renderFloorInRoom(activeFloor);
-    } else {
-      await roomViewHelper.renderFromJpg({ designImage: designImagePath });
     }
   };
 
@@ -139,8 +137,8 @@ const RoomViewNew = (props) => {
         
       try {
         //if room has been changed
-        if (prevDesignImagePath !== designImagePath && designImagePath !== "") {
-          console.log("load Design designImagePath changed");
+        if (prevfullpath !== fullpath && fullpath !== "") {
+          console.log("load Design fullpath changed");
           roomViewHelper.makeTransitionCanvas();
 
           await roomViewHelper.updatethreeCanvas();
@@ -175,9 +173,6 @@ const RoomViewNew = (props) => {
           designRendered = true;
           designRendering = false;
         } else {
-
-
-          console.log('change image here')
           roomViewHelper.makeTransitionCanvas();
           await roomViewHelper.updatethreeCanvas();
           // await renderDesign();
@@ -197,7 +192,7 @@ const RoomViewNew = (props) => {
       }
     };
     //console.log(designImageProps)
-    if(designImageProps.designImagePath || designImageProps.designImage){
+    if(designImageProps.fullpath || designImageProps.designImage){
       console.log('load design ',designImageProps)
       loadDesign();
     }

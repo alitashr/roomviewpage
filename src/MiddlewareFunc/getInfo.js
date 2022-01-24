@@ -29,7 +29,7 @@ export const getDesignData = (initialDesignProps, designPath = "") => {
       designName = fileName.substr(0, fileName.lastIndexOf("."));
     }
     designData.designName = designName;
-    designData.designImagePath = designPath;
+    designData.fullpath = designPath;
   }
   return designData;
 };

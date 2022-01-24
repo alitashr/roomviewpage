@@ -3,14 +3,12 @@ import { getDesignData } from "../../MiddlewareFunc/getInfo";
 import { openFile, readImageFromUrl } from "../../utils/fileUtils";
 
 const SET_DESIGN_NAME = "SET_DESIGN_NAME";
-const SET_DESIGN_IMAGE_PATH = "SET_DESIGN_IMAGE_PATH";
 const SET_DESIGN_DETAILS = "SET_DESIGN_DETAILS";
 const SET_FULLPATH = "SET_FULLPATH";
 const SET_DESIGN_IMAGE = "SET_DESIGN_IMAGE";
 
 export const designActions = {
   SET_DESIGN_NAME,
-  SET_DESIGN_IMAGE_PATH,
   SET_DESIGN_DETAILS,
   SET_FULLPATH,
   SET_DESIGN_IMAGE
@@ -22,12 +20,7 @@ export const setDesignName = (name) => {
     payload: name,
   };
 };
-export const setDesignImagePath = (path) => {
-  return {
-    type: SET_DESIGN_IMAGE_PATH,
-    payload: path,
-  };
-};
+
 const setDesign_Details = (payload)=>{
   return {
     type: SET_DESIGN_DETAILS,
@@ -41,7 +34,7 @@ const setFullpath = (payload)=>{
   }
 }
 
-export const setDesignImage = (payload)=>{
+const setDesignImage = (payload)=>{
   return {
     type: SET_DESIGN_IMAGE,
     payload: payload
@@ -53,16 +46,17 @@ export const setInitialDesignProps = () => {
     let designPath = sessionStorage.getItem("initdesign") || "";
     const designDataJSON = getDesignData(initialDesignProps, designPath);
     console.log("return -> designDataJSON", designDataJSON)
-    readImageFromUrl(designDataJSON.designImagePath).then((blob) => {
+    readImageFromUrl(designDataJSON.fullpath).then((blob) => {
       if(typeof blob !== Blob){
         dispatch(setDesignName(designDataJSON.designName));
-        dispatch(setDesignImagePath(designDataJSON.designImagePath));
+        dispatch(setFullpath(designDataJSON.fullpath));
      
       }
       else{
-      openFile(blob, (designImagePath) => {
+      openFile(blob, (fullpath) => {
         dispatch(setDesignName(designDataJSON.designName));
-        dispatch(setDesignImagePath(designImagePath));
+        dispatch(setFullpath(designDataJSON.fullpath));
+
       });}
     });
   };
@@ -73,6 +67,13 @@ export const setDesignDetails =({name, fullpath,designProps})=>{
     if(name)  dispatch(setDesignName(name))
     if(fullpath)  dispatch(setFullpath(fullpath))
     if(designProps)  dispatch(setDesign_Details(designProps))
+  }
+}
+
+export const changeCurrentDesignImage =(payload)=>{
+  return (dispatch)=>{
+    dispatch(setDesignImage(payload))
+    dispatch(setFullpath(null))
   }
 }
 

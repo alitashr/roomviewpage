@@ -20,7 +20,7 @@ export const downloadRendered3dIllHQ = async ({
   isDownloading,
   setIsDownloading,
   designName,
-  designImagePath,
+  fullpath,
   roomData,
   roomViewHelper
 }) => {
@@ -51,14 +51,11 @@ export const downloadRendered3dIllHQ = async ({
 
   rh.updateMask();
   await rh.updatethreeCanvas();
-  if (typeof designImagePath === "string") {
+  if (typeof fullpath === "string") {
     await roomViewHelper.renderDesignFromCustomUrl({
-      customUrl: designImagePath,
+      customUrl: fullpath,
     });
-  } else {
-    await roomViewHelper.renderFromJpg({ designImage: designImagePath });
   }
-
   const objectConfig = roomViewHelper.threeView.getObjectConfig();
   if (objectConfig) {
       rh.threeView.carpetMesh.position.copy(objectConfig.position);

@@ -611,6 +611,7 @@ export default class ThreeViewHelper {
   convMouseCord(x, y) {
     // const { offsetX, offsetY } = this.getRendererOffset();
     const vec = new THREE.Vector2();
+    console.log("convMouseCord -> vec", vec)
     const { width, height } = this.renderer.getSize(vec);
 
     var mouseX = (x / width) * 2 - 1;

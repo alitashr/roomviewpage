@@ -1,7 +1,6 @@
 import { designActions } from "./designActions";
 
 const initialState = {
-  designImagePath: "",
   designName: null,
   designDetails: {},
   fullpath: null,
@@ -13,11 +12,6 @@ const designReducer = (state = initialState, action) => {
       return {
         ...state,
         designName: action.payload,
-      };
-    case designActions.SET_DESIGN_IMAGE_PATH:
-      return {
-        ...state,
-        designImagePath: action.payload,
       };
     case designActions.SET_DESIGN_DETAILS:
       return {

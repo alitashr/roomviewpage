@@ -17,5 +17,5 @@ export const defaultRoomdata = {
 };
 export const initialDesignProps = {
   designName: "Thornure",
-  designImagePath: "Designs/Thornure.jpg"
+  fullpath: "Designs/Thornure.jpg"
 }
