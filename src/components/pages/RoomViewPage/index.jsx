@@ -12,7 +12,7 @@ import ExplorugIframePopup from "../../organisms/ExplorugIframePopup";
 import ImageDropContainer from "../../organisms/ImageDropContainer";
 import RoomContainer from "../../organisms/RoomContainer";
 
-import { setDesignName, setDesignImagePath } from "../../../redux/Design/designActions";
+import {setDesignImage } from "../../../redux/Design/designActions";
 import { canvasToBlobPromise, createCanvas } from "../../../utils/canvasUtils";
 
 const RoomViewPage = (props) => {
@@ -98,43 +98,45 @@ const RoomViewPage = (props) => {
       let filename = getFilename(imageFile.name);
       let fileType = imageFile.type;
       myImage.onload = function (ev) {
+        dispatch(setDesignImage(myImage));
+
         console.timeLog();
 
         myImage.onload = null;
-        setIsLoading(true);
+        // setIsLoading(true);
 
-        const tmpCanvas = createCanvas(myImage.width, myImage.height);
-        tmpCanvas.getContext("2d").drawImage(myImage, 0, 0, myImage.width, myImage.height);
-        canvasToBlobPromise(tmpCanvas).then((canvasBlob) => {
-          uploadRoomviewBlob({ blob: canvasBlob, filename: filename }).then((response) => {
-            console.log("uploadRoomviewBlob -> response", response);
-            if (response.toLowerCase() === "success") {
-              setIsLoading(true);
+        // const tmpCanvas = createCanvas(myImage.width, myImage.height);
+        // tmpCanvas.getContext("2d").drawImage(myImage, 0, 0, myImage.width, myImage.height);
+        // canvasToBlobPromise(tmpCanvas).then((canvasBlob) => {
+        //   uploadRoomviewBlob({ blob: canvasBlob, filename: filename }).then((response) => {
+        //     console.log("uploadRoomviewBlob -> response", response);
+        //     if (response.toLowerCase() === "success") {
+        //       setIsLoading(true);
 
-              dispatch(setDesignName(filename));
-              let key = getApiKey();
-              console.log("uploadRoomviewBlob -> key", key);
-              let designPath = "https://s3.amazonaws.com/attestbucket/" + filename;
-              if (key) {
-                designPath =
-                  "https://v3.explorug.com/appproviderv3.aspx?action=downloadimage&key=" + key + "&url=" + designPath;
-                  dispatch(setDesignImagePath(designPath));
-                  setCustomDesignLoaded(true);
-                } else {
-                const page = getPageName().page || "ruglife";
-                autoLogin(page).then(apikey=>{
-                  key = apikey;
-                  dispatch(setDesignImagePath(designPath));
-                  setCustomDesignLoaded(true);
-                });
-              }
+        //       dispatch(setDesignName(filename));
+        //       let key = getApiKey();
+        //       console.log("uploadRoomviewBlob -> key", key);
+        //       let designPath = "https://s3.amazonaws.com/attestbucket/" + filename;
+        //       if (key) {
+        //         designPath =
+        //           "https://v3.explorug.com/appproviderv3.aspx?action=downloadimage&key=" + key + "&url=" + designPath;
+        //           dispatch(setDesignImagePath(designPath));
+        //           setCustomDesignLoaded(true);
+        //         } else {
+        //         const page = getPageName().page || "ruglife";
+        //         autoLogin(page).then(apikey=>{
+        //           key = apikey;
+        //           dispatch(setDesignImagePath(designPath));
+        //           setCustomDesignLoaded(true);
+        //         });
+        //       }
              
-            } else {
-              console.error("could not upload image");
-            }
-            // return resolve(response);
-          });
-        });
+        //     } else {
+        //       console.error("could not upload image");
+        //     }
+        //     // return resolve(response);
+        //   });
+        // });
       };
       myImage.onerror = function () {
         //openNotification = { message: "Couldn't upload the file", description: "Please try again" };

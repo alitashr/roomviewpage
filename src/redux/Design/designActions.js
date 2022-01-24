@@ -6,12 +6,14 @@ const SET_DESIGN_NAME = "SET_DESIGN_NAME";
 const SET_DESIGN_IMAGE_PATH = "SET_DESIGN_IMAGE_PATH";
 const SET_DESIGN_DETAILS = "SET_DESIGN_DETAILS";
 const SET_FULLPATH = "SET_FULLPATH";
+const SET_DESIGN_IMAGE = "SET_DESIGN_IMAGE";
 
 export const designActions = {
   SET_DESIGN_NAME,
   SET_DESIGN_IMAGE_PATH,
   SET_DESIGN_DETAILS,
-  SET_FULLPATH
+  SET_FULLPATH,
+  SET_DESIGN_IMAGE
 };
 
 export const setDesignName = (name) => {
@@ -35,6 +37,13 @@ const setDesign_Details = (payload)=>{
 const setFullpath = (payload)=>{
   return {
     type: SET_FULLPATH,
+    payload: payload
+  }
+}
+
+export const setDesignImage = (payload)=>{
+  return {
+    type: SET_DESIGN_IMAGE,
     payload: payload
   }
 }

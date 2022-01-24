@@ -135,6 +135,8 @@ const RoomViewNew = (props) => {
   useEffect(() => {
     let la = true;
     const loadDesign = async () => {
+      console.log("load Design called");
+        
       try {
         //if room has been changed
         if (prevDesignImagePath !== designImagePath && designImagePath !== "") {
@@ -167,22 +169,24 @@ const RoomViewNew = (props) => {
             zoom: 1,
             applyKLRatio: false,
           });
-          // const renderedBorderRug = await getRenderedBorderRug({
-          //   borderImgUrl: "./Designs/borderrugs/RM-734 S.jpg",
-          //   borderWidth: 1,
-          //   centerPatternImgUrl: "./Designs/borderrugs/RM-720 S.jpg",
-          //   designDetails: designDetails,
-          //   fullpath,
-          //   zoom: 1,
-          //   applyKLRatio: false,
-          // });
-          // roomViewHelper.renderImage({ image: renderedDesignImage });
           roomViewHelper.renderImage({ image: renderedDesignImage });
           await renderFloorInRoom(activeFloor);
 
           designRendered = true;
           designRendering = false;
         } else {
+
+
+          console.log('change image here')
+          roomViewHelper.makeTransitionCanvas();
+          await roomViewHelper.updatethreeCanvas();
+          // await renderDesign();
+          //console.log("loadDesign -> designImageProps.designImage", designImageProps.designImage)
+
+          roomViewHelper.renderImage({ image: designImageProps.designImage });
+          
+          roomViewHelper.updateShadow();
+          onRendered();
          // onRendered();
         }
         roomViewHelper.updateShadow();
@@ -193,7 +197,7 @@ const RoomViewNew = (props) => {
       }
     };
     //console.log(designImageProps)
-    if(designImageProps.designImagePath){
+    if(designImageProps.designImagePath || designImageProps.designImage){
       console.log('load design ',designImageProps)
       loadDesign();
     }
