@@ -476,30 +476,6 @@ export default class RoomViewHelper {
             () => { }, // function to call after each tile render
             () => {
               // function to call after render is complete
-              if (
-                (window.flags.visualizations.isBorderRugs || !isDimsOrig) &&
-                window.flags.ordersheet.repeatRugInArea
-              ) {
-                const centerPath = //sessionStorage.getItem('centerDesignUrl') ||null;
-                  window.initialData.centerDesignUrl && window.initialData.centerDesignUrl !== ""
-                    ? window.initialData.centerDesignUrl
-                    : null;
-                const borderWidth = window.initialData.borderSize || 0;
-                const unit = window.initialData.unit || null;
-
-                this.repeatDesignForOverSize({
-                  centerPath,
-                  borderWidth,
-                  unit,
-                  onComplete: () => {
-                    this.threeView.setCarpetScale(this.designDetails);
-                    this.threeView.updateMap();
-                    this.threeView.setCarpetVisibility(true);
-                    this.updateGizmo();
-                    resolve();
-                  }
-                });
-              } else {
                 const cropPadding = maxArea === null ? 100 : 100 / (designDimsOrig.Width / tileCanvas.canvas.width);
                 if (!isDimsOrig) {
                   const { width, height } = getCroppedSize(
@@ -524,7 +500,6 @@ export default class RoomViewHelper {
                 this.threeView.setCarpetVisibility(true);
                 this.updateGizmo();
                 resolve();
-              }
             }
           );
         });
@@ -622,32 +597,33 @@ export default class RoomViewHelper {
         this.designDetails = designDetails;
         this.threeView.designDetails = designDetails;
         this.threeView.setCarpetScale(designDetails);
-        if (
-          (window.flags.visualizations.isBorderRugs || !isDimsOrig) &&
-          window.flags.ordersheet.repeatRugInArea
-        ) {
-          const centerPath = window.initialData.centerDesignUrl || null;
-          // window.initialData.centerDesignUrl && window.initialData.centerDesignUrl !== ""
-          //   ? window.initialData.centerDesignUrl
-          //   : null;
-          const borderWidth = window.initialData.borderSize || 0;
-          const unit = window.initialData.unit || null;
-          // window.initialData.borderSize
-          //   ? window.initialData.borderSize
-          //   : null;
+        // if (
+        //   (window.flags.visualizations.isBorderRugs || !isDimsOrig) &&
+        //   window.flags.ordersheet.repeatRugInArea
+        // ) {
+        //   const centerPath = window.initialData.centerDesignUrl || null;
+        //   // window.initialData.centerDesignUrl && window.initialData.centerDesignUrl !== ""
+        //   //   ? window.initialData.centerDesignUrl
+        //   //   : null;
+        //   const borderWidth = window.initialData.borderSize || 0;
+        //   const unit = window.initialData.unit || null;
+        //   // window.initialData.borderSize
+        //   //   ? window.initialData.borderSize
+        //   //   : null;
 
-          this.repeatDesignForOverSize({
-            centerPath,
-            borderWidth,
-            unit,
-            onComplete: () => {
-              this.threeView.setCarpetScale(this.designDetails);
-              this.threeView.updateMap();
-              resolve();
-              return;
-            }
-          });
-        } else {
+        //   this.repeatDesignForOverSize({
+        //     centerPath,
+        //     borderWidth,
+        //     unit,
+        //     onComplete: () => {
+        //       this.threeView.setCarpetScale(this.designDetails);
+        //       this.threeView.updateMap();
+        //       resolve();
+        //       return;
+        //     }
+        //   });
+        // } 
+        // else {
           if (!isDimsOrig) {
             const cropPadding = 100;
             const { width, height } = getCroppedSize(
@@ -674,7 +650,7 @@ export default class RoomViewHelper {
           this.threeView.updateMap();
           resolve();
           return;
-        }
+        //}
       }
       this.designDetails = designDetails;
 
