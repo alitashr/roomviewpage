@@ -1,0 +1,52 @@
+{
+	"version": 2,
+	"name": "Kitchen Dining Astroph",
+	"dims": {
+		"width": 3840,
+		"height": 2160
+	},
+	"roomType": "roomview",
+	"shots": [
+		"Shot_1"
+	],
+	"scene1": {
+		"objects3d": [
+			"surface1"
+		],
+		"modelUrl": "Kitchen Dining Astroph_1.FBX",
+		"surface1": {
+			"position": [
+				-86.5712890625,
+				1212.87622070313,
+				-1206.2841796875
+			],
+			"rotation": [
+				-90,
+				-3.1805546814635168e-15,
+				90.00006397617592
+			],
+			"scale": [
+				7.931631,
+				9.947719,
+				2.404781
+			]
+		},
+		"Shot_1": {
+			"position": [
+				3012.76953125,
+				1927.69616699219,
+				-4285.1875
+			],
+			"target": [
+				-810.962280273438,
+				1704.86083984375,
+				-330.831848144531
+			],
+			"fov": 28
+		}
+	},
+	"scenes": [
+		"scene1"
+	],
+	"hasTransparencyMask": true
+}

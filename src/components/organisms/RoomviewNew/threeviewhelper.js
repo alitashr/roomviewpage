@@ -76,7 +76,6 @@ export default class ThreeViewHelper {
     if (this.ambientLight) this.scene.remove(this.ambientLight);
   }
   setupSceneObjects({ carpetRotation, fbxUrl}) {
-    console.log("setupSceneObjects -> carpetRotation, fbxUrl", carpetRotation, fbxUrl)
     switch (this.roomType) {
       case "illustration":
         return this.setup3dObject();

@@ -13,9 +13,10 @@ export const getRoomData = (defaultRoomdata, roomPath = "") => {
   let roomData = defaultRoomdata;
   if (roomPath !== "") {
     let roomName = sessionStorage.getItem("roomName") || "";
-      const fileName = roomPath.split("/").pop();
-      roomData.Dir = roomPath;
-      roomData.Name =  roomName === "" ? fileName.substr(0, fileName.lastIndexOf(".")) : roomName;
+    const fileName = roomPath.split("/").pop();
+    roomData.Dir = roomPath;
+    roomData.Name = roomName === "" ? fileName.substr(0, fileName.lastIndexOf(".")) : roomName;
+    roomData.Path = roomPath;
   }
   return roomData;
 };
@@ -33,4 +34,3 @@ export const getDesignData = (initialDesignProps, designPath = "") => {
   }
   return designData;
 };
- 

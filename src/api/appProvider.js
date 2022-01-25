@@ -23,7 +23,7 @@ export const CDN_domain = process.env.PUBLIC_URL.trim() !== "" ? process.env.PUB
 
 let apikey;
 let cacheLocation = "";
-const s3ServerRoomViewBucketUrl = "https://explorug.com/archanastools/awsupload/default.aspx";
+const s3ServerRoomViewBucketUrl = "http://192.168.1.95/AWSUpload/default.aspx";// "https://explorug.com/archanastools/awsupload/default.aspx";
 
 const getCacheLocationFromUrl = (url) => url.split("/")[2];
 

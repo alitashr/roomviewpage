@@ -12,7 +12,7 @@ import ExplorugIframePopup from "../../organisms/ExplorugIframePopup";
 import ImageDropContainer from "../../organisms/ImageDropContainer";
 import RoomContainer from "../../organisms/RoomContainer";
 
-import {changeCurrentDesignImage } from "../../../redux/Design/designActions";
+import { changeCurrentDesignImage } from "../../../redux/Design/designActions";
 import { canvasToBlobPromise, createCanvas } from "../../../utils/canvasUtils";
 
 const RoomViewPage = (props) => {
@@ -23,6 +23,7 @@ const RoomViewPage = (props) => {
   let hasOverlayVideo = sessionStorage.getItem("hasOverlayVideo") || false;
   const dispatch = useDispatch();
   const roomData = useSelector((state) => state.room);
+  const designData = useSelector((state) => state.design);
 
   useEffect(() => {
     window.flags = {};
@@ -33,7 +34,7 @@ const RoomViewPage = (props) => {
     });
 
     // let roomPath = sessionStorage.getItem("initview") || "";
-    // const roomDataJSON = getRoomData(defaultRoomdata, roomPath);
+    //const roomDataJSON = getRoomData(defaultRoomdata, roomPath);
     // const baseUrl = assetsFolder + roomDataJSON.Dir;
 
     // readJSON(`${baseUrl}/config.json`).then((config) => {
@@ -65,23 +66,75 @@ const RoomViewPage = (props) => {
     let videoPath = `${assetsFolder}OverlayVideos/${roomName}.mp4`;
     return videoPath;
   };
+  // const handleBtnClick = () => {
+  //   const key = sessionStorage.getItem("key") || "";
+  //   let url = window.urlToOpen;
+  //   url = key !== "" ? window.urlToOpen + "&key=" + key : url;
+  //   console.log("handleBtnClick -> url---", url);
+  //   let customDesignUrl = "https://explorug.net/ruglife/images-for/carpet-design/Cubinia.jpg";
+  //   if (customDesignLoaded) {
+  //     let newUrl = window.getUrlToOpen(customDesignUrl);
+  //     window.open(newUrl, "_blank");
+  //   } else {
+  //     if (onButtonClick) {
+  //       onButtonClick();
+  //     } else {
+  //       //window.location = url;
+  //       setShowIframe(true);
+  //     }
+  //   }
+  // };
   const handleBtnClick = () => {
-    const key = sessionStorage.getItem("key") || "";
-    let url = window.urlToOpen;
-    url = key !== "" ? window.urlToOpen + "&key=" + key : url;
-    console.log("handleBtnClick -> url---", url);
-    let customDesignUrl = "https://explorug.net/ruglife/images-for/carpet-design/Cubinia.jpg";
-    if (customDesignLoaded) {
-      let newUrl = window.getUrlToOpen(customDesignUrl);
-      window.open(newUrl, "_blank");
-    } else {
-      if (onButtonClick) {
-        onButtonClick();
-      } else {
-        //window.location = url;
-        setShowIframe(true);
-      }
+    setIsLoading(true);
+    var currentDesignPath = designData.fullpath;
+    console.log("handleBtnClick -> currentDesignPath", currentDesignPath);
+    if (!currentDesignPath) {
+      const designImage = designData.designImage;
+      const tmpCanvas = createCanvas(designImage.width, designImage.height);
+      tmpCanvas.getContext("2d").drawImage(designImage, 0, 0, designImage.width, designImage.height);
+      canvasToBlobPromise(tmpCanvas).then((canvasBlob) => {
+        const filename = sessionStorage.getItem("fileName") || "design" + Math.round(Math.random() * 10000);
+        uploadRoomviewBlob({ blob: canvasBlob, filename: filename }).then((response) => {
+          console.log("uploadRoomviewBlob -> response", response);
+          if (response.toLowerCase() === "success") {
+            setIsLoading(true);
+            let key = getApiKey();
+            console.log("uploadRoomviewBlob -> key", key);
+            let designPath = "https://s3.amazonaws.com/attestbucket/" + filename;
+            console.log("uploadRoomviewBlob -> designPath", designPath)
+            const page = sessionStorage.getItem('page');
+            //const initdesign = sessionStorage.getItem('initdesign');
+            const initview = sessionStorage.getItem('initview')|| window.defaultRoom ||'Amber Cabin.crf3d';           
+            const urltoOpen = window.getExplorugUrl({ page, customDesignUrl:designPath, initView:initview });
+            console.log("uploadRoomviewBlob -> urltoOpen", urltoOpen);
+            window.urlToOpen = urltoOpen;
+            setIsLoading(false);
+            setShowIframe(true)
+            //window.open(urltoOpen, "_blank");
+          } else {
+            console.error("could not upload image");
+          }
+        });
+      });
     }
+    else{
+      
+      const urltoOpen = window.getUrlToOpen({design:designData.fullpath, room:roomData.Path});
+
+      // const page = sessionStorage.getItem('page');
+      // const initdesign = window.initDesign; //currentDesignPath;// sessionStorage.getItem('initdesign') || window.initDesign;
+      // const initview = sessionStorage.getItem('initview')|| window.defaultRoom ||'Amber Cabin.crf3d';
+      
+      // const urltoOpen = window.getExplorugUrl({ page, initDesign: initdesign, initView:initview });
+      console.log("handleBtnClick -> urltoOpen", urltoOpen)
+       window.urlToOpen = urltoOpen;
+      setIsLoading(false);
+      setShowIframe(true)
+
+     // window.open(urltoOpen, "_blank");
+    }
+
+   
   };
 
   const handleImageChange = (imageFile) => {
@@ -96,7 +149,9 @@ const RoomViewPage = (props) => {
       var myImage = new Image();
       myImage.src = e.target.result;
       let filename = getFilename(imageFile.name);
+      sessionStorage.setItem("fileName", filename);
       let fileType = imageFile.type;
+      sessionStorage.setItem("fileType", fileType);
       myImage.onload = function (ev) {
         dispatch(changeCurrentDesignImage(myImage));
 
@@ -130,7 +185,7 @@ const RoomViewPage = (props) => {
         //           setCustomDesignLoaded(true);
         //         });
         //       }
-             
+
         //     } else {
         //       console.error("could not upload image");
         //     }

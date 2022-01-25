@@ -1,0 +1,29 @@
+{
+  "vps": {},
+  "shots": ["Shot_1"],
+  "scenes": ["scene1"],
+  "canvases": [],
+  "width": 3840,
+  "height": 2160,
+  "dims": { "width": 3840, "height": 2160 },
+  "scene1": {
+    "overwriteFbx": false,
+    "modelUrl": "Bedroom Arcadus.FBX",
+    "objects": ["surface1"],
+    "adjustObjects": [],
+    "hideObjects": [],
+    "Shot_1": {
+      "position": [4233.0615234375, 1127.642578125, -1934.2365722656248],
+      "rotation": [242536.55971218736, 64609.160525813706, -110823.59217067136],
+      "target": [1990.1163330078125, 399.57318115234375, -223.73562622070312],
+      "fov": 50
+    },
+    "surface1": {
+      "position": [1635.89306640625, 0.0050048828125, 358.7140808105469],
+      "rotation": [-89.99999999999997, 0, 126.7597728907903],
+      "scale": [1.4646569999999999, 1.145125, 1.145125],
+      "resizable": false,
+      "textureRotation": 0
+    }
+  }
+}
