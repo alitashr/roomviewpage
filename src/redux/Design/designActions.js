@@ -1,4 +1,3 @@
-import { initialDesignProps } from "../../constants/constants";
 import { getDesignData } from "../../MiddlewareFunc/getInfo";
 import { openFile, readImageFromUrl } from "../../utils/fileUtils";
 
@@ -44,7 +43,8 @@ const setDesignImage = (payload)=>{
 export const setInitialDesignProps = () => {
   return (dispatch) => {
     let designPath = sessionStorage.getItem("initdesign") || "";
-    const designDataJSON = getDesignData(initialDesignProps, designPath);
+
+    const designDataJSON = getDesignData(designPath);
     console.log("return -> designDataJSON", designDataJSON)
     readImageFromUrl(designDataJSON.fullpath).then((blob) => {
       if(typeof blob !== Blob){

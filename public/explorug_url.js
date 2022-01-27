@@ -1,5 +1,7 @@
-function getExplorugUrl({ page = "", initDesign = "", initView = "", customDesignUrl = "" }) {
+function getExplorugUrl({ page = "", initDesign = "", initView = "", customDesignUrl = "", customClass='' }) {
   let windowUrl = `https://v3.explorug.com/explorug.html?page=${page}&initview=${initView}`;
+  windowUrl = customClass ? windowUrl+'&customclass='+customClass: windowUrl;
+
   if (customDesignUrl === "") {
     windowUrl = windowUrl + `&initdesign=${initDesign}`;
   } else {
@@ -9,30 +11,38 @@ function getExplorugUrl({ page = "", initDesign = "", initView = "", customDesig
 }
 const designsOptions = [
   {
-    text: "cubinia",
+    text: "designs/cubinia.jpg",
     value: "cubinia",
   },
   {
-    text: "dream kaleen",
+    text: "designs/dream kaleen.jpg",
     value: "Designs/ART ACRYLIC/Dream Kaleen.ctf",
   },
   {
-    text: "sublimopar",
+    text: "designs/sublimopar.jpg",
     value: "sublimopar",
+  },
+  {
+    text: "designs/atlas.jpg",
+    value: "Designs/2020 EPI1/atlasia.ctf",
   },
 ];
 const roomOptions = [
   {
-    text: "bedroom",
+    text: "rooms/bedroom arcadus",
     value: "bedroom arcadus",
   },
   {
-    text: "kitchen",
-    value: "kitchen dining astroph",
+    text: "rooms/kitchen dining astroph",
+    value: "kitchen dining astroph.crf3d",
   },
   {
-    text: "roman passage",
+    text: "rooms/roman passage",
     value: "roman passage",
+  },
+  {
+    text: "rooms/beach",
+    value: "seashore.crf3d",
   },
 ];
 const getPathValue = (key = "", optionListName = "designs") => {
@@ -49,10 +59,23 @@ window.defaultDesign = {
   designName: "cubinia",
   fullpath: "Designs/Cubinia.jpg"
 }
+window.defaultRoomdata = {
+  Path:'bedroom arcadus',
+  Dir: "./Rooms/Bedroom Arcadus",
+  Name: "Bedroom Arcadus",
+  Files: [
+    "Config.json",
+    "Shot_1.bg.jpg",
+    "Shot_1.sh.jpg",
+    "Shot_1.m.png",
+    "backgroundVideo.mp4"
+  ]
+};
 
 function getUrlToOpen({ design, room, page }) {
   console.log("getUrlToOpen -> { design, room, page }", { design, room, page })
   page = page || defaultPage; // "beyonddreams2";
+  sessionStorage.setItem('page', page);
   design = design || window.defaultDesign.designName;
   room = room || defaultRoom;
 
@@ -61,6 +84,7 @@ function getUrlToOpen({ design, room, page }) {
 
   window.initDesign = designChosen;
   window.initView = roomChosen;
+  
   let windowUrl = "";
   windowUrl = getExplorugUrl({ page, initDesign: designChosen, initView: roomChosen });
   window.urlToOpen = windowUrl;

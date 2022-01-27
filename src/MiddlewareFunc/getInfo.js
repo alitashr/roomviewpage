@@ -10,6 +10,8 @@ export const getKey = (pageName = "") => {
 };
 
 export const getRoomData = (defaultRoomdata, roomPath = "") => {
+  console.log("getRoomData -> getRoomData", getRoomData)
+
   let roomData = defaultRoomdata;
   if (roomPath !== "") {
     let roomName = sessionStorage.getItem("roomName") || "";
@@ -21,8 +23,8 @@ export const getRoomData = (defaultRoomdata, roomPath = "") => {
   return roomData;
 };
 
-export const getDesignData = (initialDesignProps, designPath = "") => {
-  let designData = initialDesignProps;
+export const getDesignData = (designPath = "") => {
+  let designData= window.defaultDesign;
   if (designPath !== "") {
     let designName = sessionStorage.getItem("designName") || "";
     if (designName === "") {
@@ -32,5 +34,6 @@ export const getDesignData = (initialDesignProps, designPath = "") => {
     designData.designName = designName;
     designData.fullpath = designPath;
   }
+  
   return designData;
 };

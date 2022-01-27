@@ -23,7 +23,7 @@ export const CDN_domain = process.env.PUBLIC_URL.trim() !== "" ? process.env.PUB
 
 let apikey;
 let cacheLocation = "";
-const s3ServerRoomViewBucketUrl = "http://192.168.1.95/AWSUpload/default.aspx";// "https://explorug.com/archanastools/awsupload/default.aspx";
+const s3ServerRoomViewBucketUrl = "https://explorug.com/archanastools/awsupload/default.aspx"; //"http://192.168.1.136/AWSUpload/default.aspx";// 
 
 const getCacheLocationFromUrl = (url) => url.split("/")[2];
 
@@ -494,6 +494,8 @@ export const uploadRoomviewBlob = ({ blob, filename }) => {
   return new Promise((resolve, reject) => {
     let numtries = 0;
     function post() {
+      console.log('formdata', 'file', blob)
+      console.log('formdata', 'filename', filename)
       return HttpClient.post(s3ServerRoomViewBucketUrl, data)
         .then((response) => {
           if (response.status === 200) resolve(response.data);

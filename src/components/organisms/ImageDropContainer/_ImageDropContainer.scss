@@ -16,7 +16,7 @@
   right: 0;
   max-width: 40vw;
   cursor: pointer;
-  z-index: 999;
+  z-index: 10;
 }
 #imageDropContainer.highlight {
   border-color: var(--active-color);

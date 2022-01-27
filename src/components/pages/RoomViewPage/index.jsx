@@ -19,7 +19,7 @@ const RoomViewPage = (props) => {
   const { showButton = true, className = "", onButtonClick, allowDesignUpload = true } = props;
   const [isLoading, setIsLoading] = useState(true);
   const [showIframe, setShowIframe] = useState(false);
-  const [customDesignLoaded, setCustomDesignLoaded] = useState(false);
+  const [customDesignPath, setCustomDesignPath] =useState(null);
   let hasOverlayVideo = sessionStorage.getItem("hasOverlayVideo") || false;
   const dispatch = useDispatch();
   const roomData = useSelector((state) => state.room);
@@ -53,7 +53,8 @@ const RoomViewPage = (props) => {
   }, []);
 
   const getVideoPlayerClassName = (roomDir) => {
-    const roomNameParts = roomDir.split("/");
+    if(!roomDir) return '';
+    const roomNameParts = roomDir ? roomDir.split("/"): '';
     const roomName = roomNameParts.pop();
     let classNameText = roomName.replace(/ /g, "-").toLowerCase();
     classNameText = `${classNameText}-clip`;
@@ -61,9 +62,12 @@ const RoomViewPage = (props) => {
   };
 
   const getVideoPlayerSrc = (roomDir) => {
+    if(!roomDir) return '';
     const roomNameParts = roomDir.split("/");
     const roomName = roomNameParts.pop();
+    console.log("getVideoPlayerSrc -> roomName", roomName)
     let videoPath = `${assetsFolder}OverlayVideos/${roomName}.mp4`;
+    console.log("getVideoPlayerSrc -> videoPath", videoPath)
     return videoPath;
   };
   // const handleBtnClick = () => {
@@ -88,7 +92,7 @@ const RoomViewPage = (props) => {
     setIsLoading(true);
     var currentDesignPath = designData.fullpath;
     console.log("handleBtnClick -> currentDesignPath", currentDesignPath);
-    if (!currentDesignPath) {
+    if (!currentDesignPath && !customDesignPath) {
       const designImage = designData.designImage;
       const tmpCanvas = createCanvas(designImage.width, designImage.height);
       tmpCanvas.getContext("2d").drawImage(designImage, 0, 0, designImage.width, designImage.height);
@@ -98,14 +102,12 @@ const RoomViewPage = (props) => {
           console.log("uploadRoomviewBlob -> response", response);
           if (response.toLowerCase() === "success") {
             setIsLoading(true);
-            let key = getApiKey();
-            console.log("uploadRoomviewBlob -> key", key);
             let designPath = "https://s3.amazonaws.com/attestbucket/" + filename;
-            console.log("uploadRoomviewBlob -> designPath", designPath)
+            setCustomDesignPath(designPath)
+            console.log("uploadRoomviewBlob -> designPath", designPath);
             const page = sessionStorage.getItem('page');
-            //const initdesign = sessionStorage.getItem('initdesign');
-            const initview = sessionStorage.getItem('initview')|| window.defaultRoom ||'Amber Cabin.crf3d';           
-            const urltoOpen = window.getExplorugUrl({ page, customDesignUrl:designPath, initView:initview });
+            //const initview = sessionStorage.getItem('initview')|| window.defaultRoom ||'Amber Cabin.crf3d';           
+            const urltoOpen = window.getExplorugUrl({ page, customDesignUrl:designPath, initView: window.initView, customClass: 'showleftbar' });
             console.log("uploadRoomviewBlob -> urltoOpen", urltoOpen);
             window.urlToOpen = urltoOpen;
             setIsLoading(false);
@@ -117,14 +119,20 @@ const RoomViewPage = (props) => {
         });
       });
     }
+    else if(customDesignPath){
+      const page = sessionStorage.getItem('page');
+      const urltoOpen = window.getExplorugUrl({ page, customDesignUrl:customDesignPath, initView: window.initView, customClass: 'showleftbar' });
+      window.urlToOpen = urltoOpen;
+      setIsLoading(false);
+      setShowIframe(true)
+    }
     else{
-      
-      const urltoOpen = window.getUrlToOpen({design:designData.fullpath, room:roomData.Path});
+      const page = sessionStorage.getItem('page');
+      const urltoOpen = window.getUrlToOpen({design:designData.fullpath, room: window.initView, page});
 
       // const page = sessionStorage.getItem('page');
       // const initdesign = window.initDesign; //currentDesignPath;// sessionStorage.getItem('initdesign') || window.initDesign;
       // const initview = sessionStorage.getItem('initview')|| window.defaultRoom ||'Amber Cabin.crf3d';
-      
       // const urltoOpen = window.getExplorugUrl({ page, initDesign: initdesign, initView:initview });
       console.log("handleBtnClick -> urltoOpen", urltoOpen)
        window.urlToOpen = urltoOpen;
@@ -153,6 +161,7 @@ const RoomViewPage = (props) => {
       let fileType = imageFile.type;
       sessionStorage.setItem("fileType", fileType);
       myImage.onload = function (ev) {
+        setCustomDesignPath(null);
         dispatch(changeCurrentDesignImage(myImage));
 
         console.timeLog();
@@ -203,8 +212,8 @@ const RoomViewPage = (props) => {
       <>
         {hasOverlayVideo && roomData && (
           <VideoPlayer
-            className={getVideoPlayerClassName(roomData.Dir)}
-            src={getVideoPlayerSrc(roomData.Dir)}
+            className={getVideoPlayerClassName(roomData.roomDetails.Dir)}
+            src={getVideoPlayerSrc(roomData.roomDetails.Dir)}
           ></VideoPlayer>
         )}
         <RoomContainer

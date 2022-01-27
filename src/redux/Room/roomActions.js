@@ -1,4 +1,4 @@
-import { assetsFolder, defaultRoomdata } from "../../constants/constants";
+import { assetsFolder } from "../../constants/constants";
 import { getRoomData } from "../../MiddlewareFunc/getInfo";
 import { readJSON } from "../../utils/fileUtils";
 
@@ -50,7 +50,7 @@ export const setActiveFloorOption = (payload) => {
 export const fetchBasicRoomDetails = () => {
   return (dispatch) => {
     let roomPath = sessionStorage.getItem("initview") || "";
-    const roomDataJSON = getRoomData(defaultRoomdata, roomPath);
+    const roomDataJSON = getRoomData(window.defaultRoomdata, roomPath);
     const baseUrl = assetsFolder + roomDataJSON.Dir;
     
     readJSON(`${baseUrl}/config.json`).then(async (config) => {
