@@ -26,6 +26,10 @@ const designsOptions = [
     text: "designs/atlas.jpg",
     value: "Designs/2020 EPI1/atlasia.ctf",
   },
+  {
+    text: "designs/tappeto classico.png",
+    value: "Designs/Artwork/Assorted Design/Tappeto Classico.ctf"
+  }
 ];
 const roomOptions = [
   {
@@ -84,7 +88,7 @@ function getUrlToOpen({ design, room, page }) {
 
   window.initDesign = designChosen;
   window.initView = roomChosen;
-  
+
   let windowUrl = "";
   windowUrl = getExplorugUrl({ page, initDesign: designChosen, initView: roomChosen });
   window.urlToOpen = windowUrl;

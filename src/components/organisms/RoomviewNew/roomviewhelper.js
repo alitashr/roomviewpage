@@ -163,7 +163,7 @@ export default class RoomViewHelper {
           this.bgVideo.src = makeUrl(baseUrl, bgVideoUrl);
           this.bgVideo.setAttribute(
             "style",
-            `-webkit-mask-image:url(${mask});mask-image:url(${mask});`
+            `-webkit-mask-image:url("${mask}");mask-image:url("${mask}");`
           );
         } else {
           this.bgVideo.src = "";
