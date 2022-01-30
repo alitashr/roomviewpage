@@ -45,7 +45,6 @@ export const setInitialDesignProps = () => {
     let designPath = sessionStorage.getItem("initdesign") || "";
 
     const designDataJSON = getDesignData(designPath);
-    console.log("return -> designDataJSON", designDataJSON)
     readImageFromUrl(designDataJSON.fullpath).then((blob) => {
       if(typeof blob !== Blob){
         dispatch(setDesignName(designDataJSON.designName));

@@ -30,6 +30,8 @@ const RoomViewNew = (props) => {
   const prevDesignDetails = usePrevious(designDetails);
   const windowSize = useWindowSize();
   const [isDownloading, setIsDownloading] = useState(false);
+  const [designRenderComplete, setDesignRenderComplete] =useState(false);
+  const [roomRenderComplete, setRoomRenderComplete] =useState(false);
 
   useEffect(() => {
     window.downloadRendered3dIllNQ = async () => {};
@@ -93,7 +95,7 @@ const RoomViewNew = (props) => {
     let la = true;
     const loadRoom = async () => {
       try {
-        console.log("load room");
+        setRoomRenderComplete(false);
         //if room has been changed
         if (prevRoomDetails !== roomData) {
           roomViewHelper.makeTransitionCanvas();
@@ -106,13 +108,17 @@ const RoomViewNew = (props) => {
           roomViewHelper.updateShadow({ clear: true });
           roomViewHelper.updateMask();
 
-          onRoomLoaded();
+         // onRoomLoaded();
         } else {
-          onRoomLoaded();
+          //onRoomLoaded();
         }
         await renderFloorInRoom(activeFloor);
         roomViewHelper.updateShadow();
         await roomViewHelper.makeTransitionCanvas({ clear: true });
+        setRoomRenderComplete(true);
+        if(designRenderComplete){
+          onRendered();
+        }
       } catch (error) {
         console.error(error);
         return;
@@ -122,8 +128,6 @@ const RoomViewNew = (props) => {
     
   const { Dir: dir, Files, baseUrl, config} = roomData.roomDetails;
      if(!Files.length || !baseUrl || !config) return;
-     console.log(roomData);
-   
     loadRoom();
     return () => {
       la = false;
@@ -133,22 +137,18 @@ const RoomViewNew = (props) => {
   useEffect(() => {
     let la = true;
     const loadDesign = async () => {
-      console.log("load Design called");
-        
+      setDesignRenderComplete(false);
       try {
         //if room has been changed
         if (prevfullpath !== fullpath && fullpath !== "") {
-          console.log("load Design fullpath changed");
           roomViewHelper.makeTransitionCanvas();
 
           await roomViewHelper.updatethreeCanvas();
           await renderDesign();
           roomViewHelper.updateShadow();
-          onRendered();
+          //onRendered();
           
         } else if (prevDesignDetails !== designDetails) {
-          console.log("prevDesignDetails", prevDesignDetails, designDetails);
-
           if (roomViewHelper.patchImage) {
             const dominantColorHex = getDominantColor(designDetails);
             roomViewHelper.updateBackground({ dominantColorHex });
@@ -175,23 +175,22 @@ const RoomViewNew = (props) => {
         } else {
           roomViewHelper.makeTransitionCanvas();
           await roomViewHelper.updatethreeCanvas();
-          // await renderDesign();
-          //console.log("loadDesign -> designImageProps.designImage", designImageProps.designImage)
-
           roomViewHelper.renderImage({ image: designImageProps.designImage });
-          
           roomViewHelper.updateShadow();
-          onRendered();
-         // onRendered();
         }
         roomViewHelper.updateShadow();
         await roomViewHelper.makeTransitionCanvas({ clear: true });
+
+        setDesignRenderComplete(true);
+        if(roomRenderComplete){
+          onRendered();
+        }
+
       } catch (error) {
         console.error(error);
         return;
       }
     };
-    //console.log(designImageProps)
     if(designImageProps.fullpath || designImageProps.designImage){
       console.log('load design ',designImageProps)
       loadDesign();

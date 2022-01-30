@@ -19,6 +19,7 @@ const RoomViewPage = (props) => {
   const { showButton = true, className = "", onButtonClick, allowDesignUpload = true } = props;
   const [isLoading, setIsLoading] = useState(true);
   const [showIframe, setShowIframe] = useState(false);
+  const [iframeUrl, setIframeUrl] = useState('');
   const [customDesignPath, setCustomDesignPath] =useState(null);
   let hasOverlayVideo = sessionStorage.getItem("hasOverlayVideo") || false;
   const dispatch = useDispatch();
@@ -29,27 +30,13 @@ const RoomViewPage = (props) => {
     window.flags = {};
     window.InterfaceElements = {};
 
+   // TODO: load floor only when necessary
+   const { activeFloor } = roomData;
+   if(activeFloor){
     getFloor().then((floors) => {
       dispatch(setFloorOptions(floors));
     });
-
-    // let roomPath = sessionStorage.getItem("initview") || "";
-    //const roomDataJSON = getRoomData(defaultRoomdata, roomPath);
-    // const baseUrl = assetsFolder + roomDataJSON.Dir;
-
-    // readJSON(`${baseUrl}/config.json`).then((config) => {
-    //   const roomData = { ...roomDataJSON, config, baseUrl };
-    //   setRoomData(roomData);
-    // });
-
-    // let designPath = sessionStorage.getItem("initdesign") || "";
-    // const designDataJSON = getDesignData(initialDesignProps, designPath);
-
-    // readImageFromUrl(designDataJSON.designImagePath).then((blob) => {
-    //   openFile(blob, (designImagePath) => {
-    //     setDesignImageProps({ designName: designDataJSON.designName, designImagePath });
-    //   });
-    // });
+   }
   }, []);
 
   const getVideoPlayerClassName = (roomDir) => {
@@ -65,9 +52,8 @@ const RoomViewPage = (props) => {
     if(!roomDir) return '';
     const roomNameParts = roomDir.split("/");
     const roomName = roomNameParts.pop();
-    console.log("getVideoPlayerSrc -> roomName", roomName)
     let videoPath = `${assetsFolder}OverlayVideos/${roomName}.mp4`;
-    console.log("getVideoPlayerSrc -> videoPath", videoPath)
+    console.log("getVideoPlayerSrc -> roomName, videoPath",roomName, videoPath)
     return videoPath;
   };
   // const handleBtnClick = () => {
@@ -91,7 +77,6 @@ const RoomViewPage = (props) => {
   const handleBtnClick = () => {
     setIsLoading(true);
     var currentDesignPath = designData.fullpath;
-    console.log("handleBtnClick -> currentDesignPath", currentDesignPath);
     if (!currentDesignPath && !customDesignPath) {
       const designImage = designData.designImage;
       const tmpCanvas = createCanvas(designImage.width, designImage.height);
@@ -104,12 +89,12 @@ const RoomViewPage = (props) => {
             setIsLoading(true);
             let designPath = "https://s3.amazonaws.com/attestbucket/" + filename;
             setCustomDesignPath(designPath)
-            console.log("uploadRoomviewBlob -> designPath", designPath);
             const page = sessionStorage.getItem('page');
             //const initview = sessionStorage.getItem('initview')|| window.defaultRoom ||'Amber Cabin.crf3d';           
             const urltoOpen = window.getExplorugUrl({ page, customDesignUrl:designPath, initView: window.initView, customClass: 'showleftbar' });
             console.log("uploadRoomviewBlob -> urltoOpen", urltoOpen);
             window.urlToOpen = urltoOpen;
+            setIframeUrl(urltoOpen)
             setIsLoading(false);
             setShowIframe(true)
             //window.open(urltoOpen, "_blank");
@@ -123,6 +108,7 @@ const RoomViewPage = (props) => {
       const page = sessionStorage.getItem('page');
       const urltoOpen = window.getExplorugUrl({ page, customDesignUrl:customDesignPath, initView: window.initView, customClass: 'showleftbar' });
       window.urlToOpen = urltoOpen;
+      setIframeUrl(urltoOpen)
       setIsLoading(false);
       setShowIframe(true)
     }
@@ -136,6 +122,7 @@ const RoomViewPage = (props) => {
       // const urltoOpen = window.getExplorugUrl({ page, initDesign: initdesign, initView:initview });
       console.log("handleBtnClick -> urltoOpen", urltoOpen)
        window.urlToOpen = urltoOpen;
+       setIframeUrl(urltoOpen)
       setIsLoading(false);
       setShowIframe(true)
 
@@ -218,8 +205,10 @@ const RoomViewPage = (props) => {
         )}
         <RoomContainer
           onRoomRendered={() => {
-            console.log("set loading false");
             setIsLoading(false);
+            if(iframeUrl===''){
+              setIframeUrl(window.urlToOpen)
+            }
           }}
         ></RoomContainer>
       </>
@@ -238,7 +227,7 @@ const RoomViewPage = (props) => {
         <ExplorugIframePopup
           className={classNames({ hidden: !showIframe })}
           showExplorugPopup={showIframe}
-          explorugPopUpUrl={window.urlToOpen}
+          explorugPopUpUrl={iframeUrl}
           onClose={() => setShowIframe(false)}
         ></ExplorugIframePopup>
       )}

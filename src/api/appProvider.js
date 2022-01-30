@@ -271,8 +271,7 @@ export const getRenderedDesign = async ({
         tilepoints.push({ x, y, z: zoom, name: convertTilePointToName(x, y) });
       }
     }
-    console.log("returnnewPromise -> tilepoints", tilepoints);
-
+   
     const context = canvas.getContext("2d");
     fetchVisualizationTiles({
       file: fullpath,
@@ -347,7 +346,6 @@ export const getRenderedBorderRug = async ({
   const tileSize = 256;
   return new Promise((resolve, reject) => {
     let { Width, Height, KLRatio, PhysicalWidth, PhysicalHeight } = designDetails;
-    console.log("returnnewPromise -> Width, Height", Width, Height);
     const canvasWidth = Width * zoom;
     const canvasHeight = Height * zoom;
     if (!applyKLRatio) KLRatio = 1;
@@ -494,13 +492,10 @@ export const uploadRoomviewBlob = ({ blob, filename }) => {
   return new Promise((resolve, reject) => {
     let numtries = 0;
     function post() {
-      console.log('formdata', 'file', blob)
-      console.log('formdata', 'filename', filename)
       return HttpClient.post(s3ServerRoomViewBucketUrl, data)
         .then((response) => {
           if (response.status === 200) resolve(response.data);
           else {
-            console.log("post -> err", response)
             if (numtries < 5) {
               numtries++;
               post();

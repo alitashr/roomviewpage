@@ -10,8 +10,6 @@ export const getKey = (pageName = "") => {
 };
 
 export const getRoomData = (defaultRoomdata, roomPath = "") => {
-  console.log("getRoomData -> getRoomData", getRoomData)
-
   let roomData = defaultRoomdata;
   if (roomPath !== "") {
     let roomName = sessionStorage.getItem("roomName") || "";

@@ -15,8 +15,8 @@ const RoomContainer = props => {
   const designData = useSelector(state=> state.design);
  
   useEffect(()=>{
-    dispatch(setInitialDesignProps()) 
-    dispatch(fetchBasicRoomDetails()) 
+     dispatch(fetchBasicRoomDetails());
+     dispatch(setInitialDesignProps());
   },[]);
 
   useEffect(() => {
@@ -35,15 +35,14 @@ const RoomContainer = props => {
     {roomDetails && roomDetails.Files.length && roomDetails.baseUrl && roomDetails.config && (
       <RoomViewNew
         onRendered={() => {
-          console.log("room has been Rendered");
-          
+          console.log("---------room has been Rendered");
           if(onRoomRendered) onRoomRendered();
         }}
-        onRoomLoaded={() => {
-          console.log("room has been loaded");
+        // onRoomLoaded={() => {
+        //   console.log("room has been loaded");
 
-          if(onRoomRendered) onRoomRendered();
-        }}
+        //   if(onRoomRendered) onRoomRendered();
+        // }}
         roomData={roomData}
         designImageProps={designData}
       />
