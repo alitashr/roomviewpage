@@ -1,5 +1,6 @@
 function getExplorugUrl({ page = "", initDesign = "", initView = "", customDesignUrl = "", customClass='' }) {
-  let windowUrl = `https://v3.explorug.com/explorug.html?page=${page}&initview=${initView}`;
+   let windowUrl = `https://v3.explorug.com/explorug.html?page=${page}&initview=${initView}`;
+  //let windowUrl = `http://localhost:23456/explorug.html?page=${page}&initview=${initView}`;
   windowUrl = customClass ? windowUrl+'&customclass='+customClass: windowUrl;
 
   if (customDesignUrl === "") {

@@ -14,7 +14,7 @@ let designRendering = false;
 const RoomViewNew = (props) => {
   const { roomData, designImageProps, onRendered, onRoomLoaded, className = "" } = props;
   const { roomDetails, activeFloor, floorOptions } = roomData;
-  const { Name: roomName, Dir: dir, Files, baseUrl, config} = roomDetails;
+  const { Name: roomName, Dir: dir, Files, baseUrl, config } = roomDetails;
   const { designDetails, fullpath } = designImageProps;
   const containerRef = useRef(null);
   const bgCanvasRef = useRef(null);
@@ -29,9 +29,8 @@ const RoomViewNew = (props) => {
   const prevfullpath = usePrevious(fullpath);
   const prevDesignDetails = usePrevious(designDetails);
   const windowSize = useWindowSize();
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [designRenderComplete, setDesignRenderComplete] =useState(false);
-  const [roomRenderComplete, setRoomRenderComplete] =useState(false);
+  const [designRenderComplete, setDesignRenderComplete] = useState(false);
+  const [roomRenderComplete, setRoomRenderComplete] = useState(false);
 
   useEffect(() => {
     window.downloadRendered3dIllNQ = async () => {};
@@ -43,7 +42,6 @@ const RoomViewNew = (props) => {
   }, [windowSize]);
 
   useMount(() => {
-
     const canvasConfig = {
       bgCanvas: bgCanvasRef.current,
       threeCanvas: threeCanvasRef.current,
@@ -62,6 +60,12 @@ const RoomViewNew = (props) => {
   }, [windowSize]);
 
   useEffect(() => {
+    if (roomRenderComplete && designRenderComplete) {
+      onRendered();
+    }
+  }, [roomRenderComplete, designRenderComplete, onRendered]);
+
+  useEffect(() => {
     if (!activeFloor) return;
     //if (isRendering || !activeFloor || designDetailState.loading) return;
 
@@ -74,7 +78,6 @@ const RoomViewNew = (props) => {
     };
     updateFloor();
   }, [activeFloor]);
-
 
   const renderFloorInRoom = (activeFloor) => {
     if (!floorOptions) return Promise.resolve();
@@ -108,7 +111,7 @@ const RoomViewNew = (props) => {
           roomViewHelper.updateShadow({ clear: true });
           roomViewHelper.updateMask();
 
-         // onRoomLoaded();
+          // onRoomLoaded();
         } else {
           //onRoomLoaded();
         }
@@ -116,7 +119,7 @@ const RoomViewNew = (props) => {
         roomViewHelper.updateShadow();
         await roomViewHelper.makeTransitionCanvas({ clear: true });
         setRoomRenderComplete(true);
-        if(designRenderComplete){
+        if (designRenderComplete) {
           onRendered();
         }
       } catch (error) {
@@ -124,10 +127,10 @@ const RoomViewNew = (props) => {
         return;
       }
     };
-   // const { Files: files, baseUrl, config } = roomDetails;
-    
-  const { Dir: dir, Files, baseUrl, config} = roomData.roomDetails;
-     if(!Files.length || !baseUrl || !config) return;
+    // const { Files: files, baseUrl, config } = roomDetails;
+
+    const { Dir: dir, Files, baseUrl, config } = roomData.roomDetails;
+    if (!Files.length || !baseUrl || !config) return;
     loadRoom();
     return () => {
       la = false;
@@ -147,7 +150,6 @@ const RoomViewNew = (props) => {
           await renderDesign();
           roomViewHelper.updateShadow();
           //onRendered();
-          
         } else if (prevDesignDetails !== designDetails) {
           if (roomViewHelper.patchImage) {
             const dominantColorHex = getDominantColor(designDetails);
@@ -169,9 +171,6 @@ const RoomViewNew = (props) => {
           });
           roomViewHelper.renderImage({ image: renderedDesignImage });
           await renderFloorInRoom(activeFloor);
-
-          designRendered = true;
-          designRendering = false;
         } else {
           roomViewHelper.makeTransitionCanvas();
           await roomViewHelper.updatethreeCanvas();
@@ -182,17 +181,16 @@ const RoomViewNew = (props) => {
         await roomViewHelper.makeTransitionCanvas({ clear: true });
 
         setDesignRenderComplete(true);
-        if(roomRenderComplete){
+        if (roomRenderComplete) {
           onRendered();
         }
-
       } catch (error) {
         console.error(error);
         return;
       }
     };
-    if(designImageProps.fullpath || designImageProps.designImage){
-      console.log('load design ',designImageProps)
+    if (designImageProps.fullpath || designImageProps.designImage) {
+      console.log("load design ", designImageProps);
       loadDesign();
     }
     return () => {
