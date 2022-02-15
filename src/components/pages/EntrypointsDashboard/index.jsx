@@ -4,71 +4,55 @@ import { Card, Col, Row } from "antd";
 const { Meta } = Card;
 const gridStyle = {
   width: "33.33%",
-  height: "30rem",
   textAlign: "center",
 };
 
+const entrypointsList = [
+  {
+    coverImgUrl: "./Assets/Dashboard/Cubinia in Bedroom Arcadus.jpg",
+    title: "Cubinia in Bedroom Arcadus",
+    metaTitle: "Design Cubinia in Bedroom Arcadus",
+    metaDesc: "from Ruglife",
+    link: "https://entry.explorug.com/roomview/1/",
+  },
+  {
+    coverImgUrl: "./Assets/Dashboard/Dream Kaleen in Roman Passage.jpg",
+    title: "Dream Kaleen in Roman Passage",
+    metaTitle: "Design Dream Kaleen in Roman Passage",
+    metaDesc: "from Ruglife",
+    link: "https://entry.explorug.com/roomview/3/",
+  },
+  {
+    coverImgUrl: "./Assets/Dashboard/Atlasia in Seashore.jpg",
+    title: "Atlasia in Seashore",
+    metaTitle: "Design Atlasia in Seashore",
+    metaDesc: "from Beyonddreams",
+    link: "https://entry.explorug.com/roomview/2/",
+  },
+];
+
 const EntrypointsDashboard = (props) => {
+  const handleCardClick = (entrypoint) => {
+    if (!entrypoint || !entrypoint.link) return;
+    window.open(entrypoint.link, "_blank");
+  };
   return (
     <div className="at-entrypoints-dashboard">
       <Row>
         <Col span={24}>
           <Card title="Explorug Entry Points">
-            <Card.Grid style={gridStyle}>
-              <img
-                alt="Cubinia in Bedroom Arcadus"
-                className="entrypoints-cards"
-                src="./test pages/Dashboard/Cubinia in Bedroom Arcadus.jpg"
-                title="Cubinia in Bedroom Arcadus"
-              />
-              {/* <iframe
-              className="entrypoints-cards"
-
-                title="Cubinia in Bedroom Arcadus"
-                id="iframe1"
-                marginwidth="0"
-                frameborder="0"
-                width="100%"
-                scrolling="auto"
-                height="100%"
-                marginheight="0"
-                allow="camera"
-                allowfullscreen=""
-                src="https://entry.explorug.com/roomview/1/"
-              ></iframe> */}
-              <Meta title="Design Cubinia in Bedroom Arcadus" description="from Ruglife" />
-            </Card.Grid>
-
-            <Card.Grid style={gridStyle}>
-              <img
-                alt="Atlasia in Seashore"
-                className="entrypoints-cards"
-                src="./test pages/Dashboard/Atlasia in Seashore.jpg"
-                title="Atlasia in Seashore"
-              />
-
-              <Meta title="Design Atlasia in Seashore" description="from Beyonddreams" />
-            </Card.Grid>
-            <Card.Grid style={gridStyle}>
-              <img
-                alt="Dream Kaleen in Roman Passage"
-                className="entrypoints-cards"
-                src="./test pages/Dashboard/Dream Kaleen in Roman Passage.jpg"
-                title="Dream Kaleen in Roman Passage"
-              />
-
-              <Meta title="Design Dream Kaleen in Roman Passage" description="from Ruglife" />
-            </Card.Grid>
+            {entrypointsList.map((entrypoint, index) => (
+              <Card.Grid style={gridStyle} onClick={() => handleCardClick(entrypoint)}>
+                <img
+                  alt={entrypoint.title}
+                  className="entrypoints-cards"
+                  src={entrypoint.coverImgUrl}
+                  title={entrypoint.title}
+                />
+                <Meta title={entrypoint.metaTitle} description={entrypoint.metaDesc} />
+              </Card.Grid>
+            ))}
           </Card>
-          {/* <Card
-    hoverable
-    style={{ width: 240 }}
-    cover={
-     
-  }
-  >
-    <Meta title="Europe Street beat" description="www.instagram.com" />
-  </Card> */}
         </Col>
       </Row>
     </div>
