@@ -87,8 +87,8 @@ const RoomViewPage = (props) => {
           console.log("uploadRoomviewBlob -> response", response);
           if (response.toLowerCase() === "success") {
             setIsLoading(true);
-            let designPath = "https://s3.amazonaws.com/attestbucket/" + filename;
-            setCustomDesignPath(designPath)
+            let designPath = "https://explorug.com/archanastools/awsupload/Uploads/" + filename; //"https://s3.amazonaws.com/attestbucket/"
+            setCustomDesignPath(designPath);
             const page = sessionStorage.getItem('page');
             //const initview = sessionStorage.getItem('initview')|| window.defaultRoom ||'Amber Cabin.crf3d';           
             const urltoOpen = window.getExplorugUrl({ page, customDesignUrl:designPath, initView: window.initView, customClass: 'showleftbar' });
