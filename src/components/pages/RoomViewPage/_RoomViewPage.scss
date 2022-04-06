@@ -4,15 +4,6 @@
   width: 100%;
   bottom: 0;
 }
-.hidden {
-  display: none;
-}
-.invisible {
-  opacity: 0 !important;
-  pointer-events: none;
-  //display: none !important;
-  z-index: -999;
-}
 .spinner-container {
   display: flex;
   justify-content: center;
@@ -55,6 +46,15 @@
 
 video.object-fit {
   width: 100%;
+}
+.hidden {
+  display: none;
+}
+.invisible {
+  opacity: 0 !important;
+  pointer-events: none;
+  //display: none !important;
+  z-index: -999;
 }
 @media screen and (max-width: 1200px) {
   .at-entrypoint-roomview-btn {

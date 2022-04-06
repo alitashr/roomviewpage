@@ -63,7 +63,7 @@ const RoomViewNew = (props) => {
     if (roomRenderComplete && designRenderComplete) {
       onRendered();
     }
-  }, [roomRenderComplete, designRenderComplete, onRendered]);
+  }, [roomRenderComplete, designRenderComplete]);
 
   useEffect(() => {
     if (!activeFloor) return;
@@ -119,9 +119,9 @@ const RoomViewNew = (props) => {
         roomViewHelper.updateShadow();
         await roomViewHelper.makeTransitionCanvas({ clear: true });
         setRoomRenderComplete(true);
-        if (designRenderComplete) {
-          onRendered();
-        }
+        // if (designRenderComplete) {
+        //   onRendered();
+        // }
       } catch (error) {
         console.error(error);
         return;
@@ -149,7 +149,6 @@ const RoomViewNew = (props) => {
           await roomViewHelper.updatethreeCanvas();
           await renderDesign();
           roomViewHelper.updateShadow();
-          //onRendered();
         } else if (prevDesignDetails !== designDetails) {
           if (roomViewHelper.patchImage) {
             const dominantColorHex = getDominantColor(designDetails);
@@ -181,9 +180,9 @@ const RoomViewNew = (props) => {
         await roomViewHelper.makeTransitionCanvas({ clear: true });
 
         setDesignRenderComplete(true);
-        if (roomRenderComplete) {
-          onRendered();
-        }
+        // if (roomRenderComplete) {
+        //   onRendered();
+        // }
       } catch (error) {
         console.error(error);
         return;
